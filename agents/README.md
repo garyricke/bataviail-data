@@ -16,3 +16,29 @@ Design summary (Path B):
 quarantine + promote ~175 candidates. Pilots: Chuck's Cheeseburgers, 63rd Street
 Apothecary (20744), A Step Above Dance Academy (18746), 1833 Leadership Academy
 (20831), Water Street Studios.
+
+## Prototype scaffold (runnable now, dry-run)
+
+| Module | Role |
+|---|---|
+| `config.py` | mode + models + pilots + thresholds. **DRY_RUN is ON by default**; opt out with `DRY_RUN=0`. |
+| `db.py` | entity reads; `apply_update()` is a no-op in dry-run (write guard) |
+| `scout.py` | gather raw signals → `ScoutBundle`. Dry-run synthesizes deterministically; `_scout_live` = Brave + homepage fetch later |
+| `enrich.py` | `ScoutBundle` → reviewable `ProposedUpdate`. Dry-run structures without an LLM; live uses Sonnet (deep) / Haiku (routine) |
+| `orchestrator.py` | loads pilots, scouts+enriches concurrently (asyncio), reports proposed writes, routes non-chamber pilots to manual onboarding |
+| `classify_foia.py` | classifies the 799 distinct quarantine addresses; dry-run heuristic = chamber-overlap → public_facing |
+
+Run (dry-run, no keys/cost, no writes):
+
+```bash
+.venv/bin/python -m agents.orchestrator
+.venv/bin/python -m agents.classify_foia
+```
+
+Dry-run results against live data: 4 pilots propose hours/social/news, Chuck's →
+manual onboarding; FOIA classifier auto-finds **148** public-facing via chamber
+overlap, leaving **651** for the real LLM+web pass (the path to ~175).
+
+**To go live (later):** fill `ANTHROPIC_API_KEY` + `BRAVE_API_KEY` in `.env`,
+implement `_scout_live` / `_enrich_live` / the LLM classifier + `apply_update`
+write path, then run with `DRY_RUN=0`.
