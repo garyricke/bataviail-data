@@ -138,6 +138,10 @@ def apply_update(update) -> str:
             if n_ev:
                 changes["events"] = {"new_count": n_ev}
 
+        if "brand" in fields:
+            cur.execute("update entities set brand=%s, updated_at=now() where id=%s", (Json(fields["brand"]), eid))
+            changes["brand"] = fields["brand"]
+
         # Audit + freshness + verification status
         cur.execute(
             """insert into entity_changelog (entity_id, source, model, confidence, changes)

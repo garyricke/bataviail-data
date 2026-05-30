@@ -6,6 +6,7 @@ Sonnet (deep) or Haiku (routine) and parses structured fields back out.
 from __future__ import annotations
 
 import asyncio
+import re
 from dataclasses import dataclass, field
 
 from agents.config import DRY_RUN, MODEL_CHEAP, MODEL_DEEP
@@ -47,7 +48,12 @@ _SYSTEM = (
     "Saturday') and assign the correct year using the CURRENT DATE provided. Use "
     "ISO YYYY-MM-DD for date; leave date empty only if truly unspecified. Do NOT "
     "treat a general 'classes offered' as an event (that is a service) unless it "
-    "has a specific date. Return an empty events array if none are clearly dated."
+    "has a specific date. Return an empty events array if none are clearly dated.\n\n"
+    "BRAND: from the BRANDING SIGNALS block (theme-color, CSS variables, font "
+    "links, frequent colors), pick the org's primary and accent colors and "
+    "heading/body fonts. Prefer an explicit theme-color or a --primary/--accent "
+    "variable over raw frequency. Return colors as #RRGGBB. Leave a field empty "
+    "if the signals don't support it; never guess a palette from nothing."
 )
 
 _TOOL = {
@@ -92,8 +98,23 @@ _TOOL = {
                     "additionalProperties": False,
                 },
             },
+            "brand": {
+                "type": "object",
+                "description": "Visual brand synthesized ONLY from the provided branding signals. Use empty strings when a signal is absent — never invent colors or fonts.",
+                "properties": {
+                    "primary": {"type": "string", "description": "#RRGGBB main brand color, else empty"},
+                    "accent": {"type": "string", "description": "#RRGGBB secondary/accent color, else empty"},
+                    "text": {"type": "string", "description": "#RRGGBB body text color if evident, else empty"},
+                    "bg": {"type": "string", "description": "#RRGGBB background if evident, else empty"},
+                    "font_heading": {"type": "string", "description": "heading font family name, else empty"},
+                    "font_body": {"type": "string", "description": "body font family name, else empty"},
+                    "confidence": {"type": "number", "description": "0..1 confidence in this palette"},
+                },
+                "required": ["primary", "accent", "text", "bg", "font_heading", "font_body", "confidence"],
+                "additionalProperties": False,
+            },
         },
-        "required": ["summary", "services", "found_hours", "hours", "events"],
+        "required": ["summary", "services", "found_hours", "hours", "events", "brand"],
         "additionalProperties": False,
     },
 }
@@ -113,6 +134,15 @@ def _call_anthropic(model, entity, bundle):
     )
     if bundle.events_text:
         user_content += f"\n\nEvents page ({bundle.events_url}):\n{bundle.events_text}"
+    if bundle.brand_evidence:
+        be = bundle.brand_evidence
+        user_content += (
+            "\n\nBRANDING SIGNALS (from the site's HTML/CSS):\n"
+            f"theme-color: {be.get('theme_color') or 'none'}\n"
+            f"fonts: {', '.join(be.get('fonts') or []) or 'none'}\n"
+            f"css color vars: {be.get('css_vars') or {}}\n"
+            f"frequent colors: {', '.join(be.get('top_colors') or []) or 'none'}"
+        )
     # No thinking: forcing a specific tool (tool_choice) is incompatible with it.
     return client.messages.create(
         model=model,
@@ -142,6 +172,28 @@ def _structure(entity, bundle: ScoutBundle, model: str) -> ProposedUpdate:
     )
 
 
+_HEX6 = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def _clean_brand(b: dict):
+    """Validate the model's brand object: keep only well-formed hex + sane fonts."""
+    out = {}
+    for k in ("primary", "accent", "text", "bg"):
+        v = (b.get(k) or "").strip()
+        if _HEX6.match(v):
+            out[k] = v.lower()
+    for k in ("font_heading", "font_body"):
+        v = (b.get(k) or "").strip()
+        if v and len(v) < 60:
+            out[k] = v
+    try:
+        out["confidence"] = round(float(b.get("confidence") or 0), 2)
+    except (TypeError, ValueError):
+        out["confidence"] = 0.0
+    # Useful only if we got at least a primary color or a heading font.
+    return out if (out.get("primary") or out.get("font_heading")) else None
+
+
 async def _enrich_live(entity, bundle, model) -> ProposedUpdate:
     """Send the scraped homepage text to Claude and parse a structured update."""
     if not bundle.homepage_text:
@@ -166,6 +218,10 @@ async def _enrich_live(entity, bundle, model) -> ProposedUpdate:
     if events:
         fields["events"] = events
         prov.append(f"{len(events)} events from {model}")
+    brand = _clean_brand(data.get("brand") or {})
+    if brand:
+        fields["brand"] = brand
+        prov.append(f"brand from {model}")
     # Fold in the scout's deterministic regex discoveries (real, no LLM).
     if bundle.discovered_social:
         fields["social"] = bundle.discovered_social

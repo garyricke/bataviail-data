@@ -8,6 +8,7 @@ detection. Run a single live scout with `python -m agents.scout_one`.
 from __future__ import annotations
 
 import asyncio
+import collections
 import hashlib
 import json
 import os
@@ -45,6 +46,7 @@ class ScoutBundle:
     homepage_text: str = ""
     events_url: str = ""
     events_text: str = ""
+    brand_evidence: dict = field(default_factory=dict)
     search_snippets: list[str] = field(default_factory=list)
     discovered_hours: list[dict] = field(default_factory=list)
     discovered_social: dict = field(default_factory=dict)
@@ -128,6 +130,84 @@ def _extract_contacts(html: str, text: str) -> dict:
     return out
 
 
+# ── Brand-signal extraction ───────────────────────────────────────────────────
+THEME_RE = re.compile(r'<meta[^>]*?theme-color[^>]*?>', re.I)
+CONTENT_RE = re.compile(r'content=["\']([^"\']+)["\']', re.I)
+GFONT_FAMILY_RE = re.compile(r'family=([A-Za-z0-9 +]+)', re.I)
+FONTFAM_RE = re.compile(r'font-family\s*:\s*([^;{}"\']+)', re.I)
+HEX_RE = re.compile(r'#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b')
+CSSVAR_RE = re.compile(
+    r'(--[\w-]*(?:colou?r|primary|secondary|accent|brand|theme)[\w-]*)\s*:\s*'
+    r'(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\))', re.I)
+LINK_RE = re.compile(r'<link\b[^>]*>', re.I)
+HREF_RE = re.compile(r'href=["\']([^"\']+)["\']', re.I)
+
+
+def _hex6(h: str):
+    h = h.lstrip("#")
+    if len(h) == 3:
+        h = "".join(c * 2 for c in h)
+    return "#" + h.lower() if len(h) == 6 else None
+
+
+def _interesting(hex6: str) -> bool:
+    """Drop near-grays, near-white and near-black — keep saturated brand colors."""
+    r, g, b = int(hex6[1:3], 16), int(hex6[3:5], 16), int(hex6[5:7], 16)
+    mx, mn = max(r, g, b), min(r, g, b)
+    if mx - mn < 24:
+        return False                       # gray
+    if mx > 245 and mn > 230:
+        return False                       # near white
+    return True
+
+
+def _clean_font(decl: str):
+    first = decl.split(",")[0].strip().strip("'\"")
+    low = first.lower()
+    if not first or low in ("inherit", "initial", "unset") or first.startswith(("var(", "-")):
+        return None
+    if low in ("sans-serif", "serif", "monospace", "system-ui"):
+        return None
+    return first
+
+
+def _brand_signals(text: str, is_html: bool) -> dict:
+    sig = {"fonts": [], "colors": collections.Counter(), "vars": {}, "theme": None}
+    if is_html:
+        for tag in THEME_RE.findall(text):
+            m = CONTENT_RE.search(tag)
+            if m:
+                sig["theme"] = m.group(1).strip()
+                break
+        for fam in GFONT_FAMILY_RE.findall(text):
+            f = fam.replace("+", " ").strip()
+            if f and f not in sig["fonts"]:
+                sig["fonts"].append(f)
+    for decl in FONTFAM_RE.findall(text):
+        f = _clean_font(decl)
+        if f and f not in sig["fonts"]:
+            sig["fonts"].append(f)
+    for h in HEX_RE.findall(text):
+        h6 = _hex6(h)
+        if h6 and _interesting(h6):
+            sig["colors"][h6] += 1
+    for name, val in CSSVAR_RE.findall(text):
+        sig["vars"][name.lower()] = val.strip()
+    return sig
+
+
+def _first_stylesheet(html: str, base_url: str) -> str:
+    for m in LINK_RE.finditer(html):
+        tag = m.group(0)
+        if "stylesheet" in tag.lower():
+            hm = HREF_RE.search(tag)
+            if hm:
+                u = urllib.parse.urljoin(base_url, hm.group(1))
+                if ".css" in u.lower():
+                    return u
+    return ""
+
+
 def _find_events_url(html: str, base_url: str) -> str:
     """Pick the best same-site events/calendar link from the homepage, if any."""
     best = None
@@ -201,6 +281,27 @@ async def _scout_live(entity) -> ScoutBundle:
     socials = {p: u for p, u in _extract_socials(body).items() if p not in entity["socials"]}
     snippets = await asyncio.to_thread(_brave_search, f'{entity["name"]} Batavia IL hours')
 
+    # Brand signals: homepage HTML + first linked stylesheet (best-effort).
+    brand = _brand_signals(body, is_html=True)
+    css_href = _first_stylesheet(body, final_url)
+    if css_href:
+        try:
+            _, _, css, _ = await asyncio.to_thread(_fetch, css_href)
+            css_sig = _brand_signals(css[:60000], is_html=False)
+            brand["colors"] += css_sig["colors"]
+            for f in css_sig["fonts"]:
+                if f not in brand["fonts"]:
+                    brand["fonts"].append(f)
+            brand["vars"].update(css_sig["vars"])
+        except Exception:
+            pass
+    brand_evidence = {
+        "theme_color": brand["theme"],
+        "fonts": brand["fonts"][:6],
+        "css_vars": dict(list(brand["vars"].items())[:8]),
+        "top_colors": [f"{c} (x{n})" for c, n in brand["colors"].most_common(8)],
+    }
+
     # Look for an events/calendar page and fetch it (best-effort, cached).
     events_url, events_text = "", ""
     found = _find_events_url(body, final_url)
@@ -219,6 +320,7 @@ async def _scout_live(entity) -> ScoutBundle:
         title=(title_m.group(1).strip() if title_m else ""),
         homepage_text=text[:4000],
         events_url=events_url, events_text=events_text,
+        brand_evidence=brand_evidence,
         search_snippets=snippets,
         discovered_social=socials,
         discovered_contacts=_extract_contacts(body, text),
