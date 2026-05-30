@@ -1,0 +1,21 @@
+# Secrets
+.env
+.env.local
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# OS
+.DS_Store
+
+# Agent run artifacts / caches (DB is source of truth)
+agents/.cache/
+*.log
