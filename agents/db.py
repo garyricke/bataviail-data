@@ -108,6 +108,36 @@ def apply_update(update) -> str:
             if phone:  # backfill the entity phone only when missing
                 cur.execute("update entities set phone=%s where id=%s and (phone is null or phone='')", (phone, eid))
 
+        if "events" in fields:
+            import re as _re
+            n_ev = 0
+            for ev in fields["events"]:
+                title = (ev.get("title") or "").strip()
+                if not title:
+                    continue
+                date = (ev.get("date") or "").strip()
+                time = (ev.get("time") or "").strip()
+                starts_at = None
+                if _re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
+                    t = time if _re.fullmatch(r"\d{2}:\d{2}", time) else "00:00"
+                    starts_at = f"{date}T{t}:00"
+                dedup = _re.sub(r"\s+", " ", title.lower()).strip() + "|" + date
+                cur.execute(
+                    """insert into entity_events
+                         (entity_id, title, description, starts_at, all_day, location, url, price, source, dedup_key)
+                       values (%s,%s,%s,%s,%s,%s,%s,%s,'entity_site',%s)
+                       on conflict (entity_id, dedup_key) do update set
+                         title=excluded.title, description=excluded.description,
+                         starts_at=excluded.starts_at, all_day=excluded.all_day,
+                         location=excluded.location, url=excluded.url, price=excluded.price,
+                         found_at=now()""",
+                    (eid, title, ev.get("description") or None, starts_at, not bool(time),
+                     ev.get("location") or None, ev.get("url") or None, ev.get("price") or None, dedup),
+                )
+                n_ev += 1
+            if n_ev:
+                changes["events"] = {"new_count": n_ev}
+
         # Audit + freshness + verification status
         cur.execute(
             """insert into entity_changelog (entity_id, source, model, confidence, changes)

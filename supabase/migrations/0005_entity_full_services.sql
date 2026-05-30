@@ -2,7 +2,8 @@
 -- entity_services was written by the enrich pipeline (0004) but wasn't yet
 -- surfaced in the public read view the frontend consumes. This adds it.
 
-create or replace view entity_full with (security_invoker = true) as
+drop view if exists entity_full;
+create view entity_full with (security_invoker = true) as
   select e.*,
          (select coalesce(jsonb_agg(to_jsonb(ct) - 'entity_id'), '[]') from entity_contacts ct where ct.entity_id = e.id) as contacts,
          (select coalesce(jsonb_agg(to_jsonb(s)  - 'entity_id'), '[]') from entity_social   s  where s.entity_id  = e.id) as social,
@@ -10,3 +11,5 @@ create or replace view entity_full with (security_invoker = true) as
          (select coalesce(array_agg(c.name), '{}') from entity_categories ec join categories c on c.id = ec.category_id where ec.entity_id = e.id) as categories,
          (select coalesce(array_agg(sv.name order by sv.name), '{}') from entity_services sv where sv.entity_id = e.id) as services
   from entities e;
+
+grant select on entity_full to anon, authenticated;

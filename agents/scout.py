@@ -26,6 +26,9 @@ SOCIAL_RE = re.compile(
     r'https?://(?:www\.)?(facebook|instagram|linkedin|twitter|x|youtube|tiktok)\.com/[^\s"\'<>)]+',
     re.I,
 )
+EVENTS_LINK_RE = re.compile(
+    r'<a\b[^>]*?href=["\']([^"\']+)["\'][^>]*?>(.*?)</a>', re.I | re.S)
+EVENTS_HINT_RE = re.compile(r'event|calendar|happening|upcoming|workshops?|classes', re.I)
 EMAIL_RE = re.compile(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
 PHONE_RE = re.compile(r'\(?\b\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b')
 TITLE_RE = re.compile(r'<title[^>]*>(.*?)</title>', re.I | re.S)
@@ -40,6 +43,8 @@ class ScoutBundle:
     status: int = 0
     title: str = ""
     homepage_text: str = ""
+    events_url: str = ""
+    events_text: str = ""
     search_snippets: list[str] = field(default_factory=list)
     discovered_hours: list[dict] = field(default_factory=list)
     discovered_social: dict = field(default_factory=dict)
@@ -123,6 +128,23 @@ def _extract_contacts(html: str, text: str) -> dict:
     return out
 
 
+def _find_events_url(html: str, base_url: str) -> str:
+    """Pick the best same-site events/calendar link from the homepage, if any."""
+    best = None
+    for m in EVENTS_LINK_RE.finditer(html):
+        href, text = m.group(1), re.sub(r'<[^>]+>', '', m.group(2))
+        if href.startswith(("mailto:", "tel:", "#", "javascript:")):
+            continue
+        if EVENTS_HINT_RE.search(href) or EVENTS_HINT_RE.search(text):
+            absu = urllib.parse.urljoin(base_url, href)
+            if urllib.parse.urlparse(absu).netloc == urllib.parse.urlparse(base_url).netloc:
+                # Prefer a path that literally contains 'event' or 'calendar'.
+                score = 2 if re.search(r'event|calendar', absu, re.I) else 1
+                if best is None or score > best[0]:
+                    best = (score, absu)
+    return best[1] if best else ""
+
+
 def _brave_search(query: str, n: int = 3) -> list[str]:
     key = os.environ.get("BRAVE_API_KEY")
     if not key:
@@ -179,11 +201,24 @@ async def _scout_live(entity) -> ScoutBundle:
     socials = {p: u for p, u in _extract_socials(body).items() if p not in entity["socials"]}
     snippets = await asyncio.to_thread(_brave_search, f'{entity["name"]} Batavia IL hours')
 
+    # Look for an events/calendar page and fetch it (best-effort, cached).
+    events_url, events_text = "", ""
+    found = _find_events_url(body, final_url)
+    if found and found.rstrip("/") != final_url.rstrip("/"):
+        try:
+            ev_final, ev_status, ev_body, ev_etag = await asyncio.to_thread(_fetch, found)
+            _cache_put(ev_final, ev_status, ev_etag,
+                       hashlib.sha256(ev_body.encode("utf-8", "replace")).hexdigest(), ev_body)
+            events_url, events_text = ev_final, _html_to_text(ev_body)[:5000]
+        except Exception:
+            pass  # events page is optional; never fail the scout over it
+
     return ScoutBundle(
         entity_id=entity["id"], changed=changed, source="live",
         final_url=final_url, status=status,
         title=(title_m.group(1).strip() if title_m else ""),
         homepage_text=text[:4000],
+        events_url=events_url, events_text=events_text,
         search_snippets=snippets,
         discovered_social=socials,
         discovered_contacts=_extract_contacts(body, text),

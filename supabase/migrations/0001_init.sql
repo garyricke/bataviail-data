@@ -166,7 +166,8 @@ create or replace view entities_summary with (security_invoker = true) as
   left join categories c on c.id = ec.category_id
   group by e.id, l.city, l.state, l.zip;
 
-create or replace view entity_full with (security_invoker = true) as
+drop view if exists entity_full;
+create view entity_full with (security_invoker = true) as
   select e.*,
          (select coalesce(jsonb_agg(to_jsonb(ct) - 'entity_id'), '[]') from entity_contacts ct where ct.entity_id = e.id) as contacts,
          (select coalesce(jsonb_agg(to_jsonb(s)  - 'entity_id'), '[]') from entity_social   s  where s.entity_id  = e.id) as social,

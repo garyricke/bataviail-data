@@ -35,12 +35,19 @@ class ProposedUpdate:
 # system prompt grows — the cache_control is correct and harmless until then.)
 _SYSTEM = (
     "You are a precise data-extraction assistant for a Batavia, IL community "
-    "directory. Given the visible text of an organization's homepage, extract "
-    "ONLY facts explicitly present on the page. Never invent or infer hours, "
-    "services, or details that are not clearly stated. If the page does not state "
-    "opening hours, set found_hours=false and return an empty hours array. Keep "
-    "the summary factual and under 40 words. Use 24-hour HH:MM times; "
-    "day_of_week is 0=Sunday .. 6=Saturday."
+    "directory. Given the visible text of an organization's homepage (and, when "
+    "provided, its events page), extract ONLY facts explicitly present in the "
+    "text. Never invent or infer hours, services, events, or details that are not "
+    "clearly stated. If the page does not state opening hours, set "
+    "found_hours=false and return an empty hours array. Keep the summary factual "
+    "and under 40 words. Use 24-hour HH:MM times; day_of_week is 0=Sunday .. "
+    "6=Saturday.\n\n"
+    "EVENTS: extract specific, dated happenings (a show, a fundraiser, an open "
+    "house, a class-series start date, a sale). Resolve relative dates ('this "
+    "Saturday') and assign the correct year using the CURRENT DATE provided. Use "
+    "ISO YYYY-MM-DD for date; leave date empty only if truly unspecified. Do NOT "
+    "treat a general 'classes offered' as an event (that is a service) unless it "
+    "has a specific date. Return an empty events array if none are clearly dated."
 )
 
 _TOOL = {
@@ -67,8 +74,26 @@ _TOOL = {
                     "additionalProperties": False,
                 },
             },
+            "events": {
+                "type": "array",
+                "description": "Specific dated upcoming events; empty if none clearly dated.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "title": {"type": "string"},
+                        "date": {"type": "string", "description": "ISO YYYY-MM-DD, or empty if unspecified"},
+                        "time": {"type": "string", "description": "Start time HH:MM 24-hour, or empty"},
+                        "location": {"type": "string", "description": "Venue/address if stated, else empty"},
+                        "url": {"type": "string", "description": "Event detail/registration URL if present, else empty"},
+                        "price": {"type": "string", "description": "Price or 'Free' if stated, else empty"},
+                        "description": {"type": "string", "description": "One-line description, else empty"},
+                    },
+                    "required": ["title", "date", "time", "location", "url", "price", "description"],
+                    "additionalProperties": False,
+                },
+            },
         },
-        "required": ["summary", "services", "found_hours", "hours"],
+        "required": ["summary", "services", "found_hours", "hours", "events"],
         "additionalProperties": False,
     },
 }
@@ -78,16 +103,20 @@ def _call_anthropic(model, entity, bundle):
     import anthropic  # imported lazily so dry-run never needs the dep
 
     client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env (.env via override)
+    from datetime import date
     user_content = (
+        f"Current date: {date.today().isoformat()}\n"
         f"Organization: {entity['name']}\n"
         f"Website: {bundle.final_url}\n"
         f"Page title: {bundle.title}\n\n"
         f"Homepage text:\n{bundle.homepage_text}"
     )
+    if bundle.events_text:
+        user_content += f"\n\nEvents page ({bundle.events_url}):\n{bundle.events_text}"
     # No thinking: forcing a specific tool (tool_choice) is incompatible with it.
     return client.messages.create(
         model=model,
-        max_tokens=1500,
+        max_tokens=2500,
         system=[{"type": "text", "text": _SYSTEM, "cache_control": {"type": "ephemeral"}}],
         tools=[_TOOL],
         tool_choice={"type": "tool", "name": "record_business_info"},
@@ -133,6 +162,10 @@ async def _enrich_live(entity, bundle, model) -> ProposedUpdate:
     if data.get("found_hours") and data.get("hours") and not entity["has_hours"]:
         fields["hours"] = data["hours"]
         prov.append(f"hours from {model}")
+    events = [e for e in (data.get("events") or []) if (e.get("title") or "").strip()]
+    if events:
+        fields["events"] = events
+        prov.append(f"{len(events)} events from {model}")
     # Fold in the scout's deterministic regex discoveries (real, no LLM).
     if bundle.discovered_social:
         fields["social"] = bundle.discovered_social
