@@ -94,7 +94,10 @@ def _do_fetch(url, ua, ctx, timeout):
         "Accept-Encoding": "identity",  # avoid gzip so body is plain text
     })
     with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
-        return r.geturl(), r.status, r.read().decode("utf-8", errors="replace"), r.headers.get("ETag")
+        # Strip NUL (0x00) here so nothing downstream (cache, text, brand) carries
+        # bytes Postgres text columns reject.
+        body = r.read().decode("utf-8", errors="replace").replace("\x00", "")
+        return r.geturl(), r.status, body, r.headers.get("ETag")
 
 
 def _legacy_ssl_ctx():
