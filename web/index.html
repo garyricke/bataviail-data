@@ -19,6 +19,11 @@
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
   .card{background:#fff;border:1px solid var(--line);border-radius:14px;border-top:5px solid var(--b,var(--navy));
         padding:20px;box-shadow:0 1px 2px rgba(20,24,48,.05);overflow:hidden}
+  .hero{position:relative;margin:-20px -20px 15px;border-radius:13px 13px 0 0;overflow:hidden;aspect-ratio:3/2;background:#eef0f5}
+  .hero img{width:100%;height:100%;object-fit:cover;display:block}
+  .hero-badge{position:absolute;left:10px;bottom:10px;font-size:10px;font-weight:700;letter-spacing:.4px;color:#fff;padding:3px 9px;border-radius:999px}
+  .hero-badge.enhanced{background:rgba(41,47,123,.88)}
+  .hero-badge.generated{background:rgba(60,64,82,.82)}
   .card h2{margin:0;font-size:20px;line-height:1.2;color:var(--bname,var(--navy));font-family:var(--bfont,inherit)}
   .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px}
   .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;letter-spacing:.3px}
@@ -75,7 +80,7 @@ const ev=s=>{ // format an event datetime
 };
 
 async function load(){
-  const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,verification_status,last_verified_by";
+  const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,hero,verification_status,last_verified_by";
   const url=`${SUPABASE_URL}/rest/v1/entity_full?last_verified_by=like.claude*&select=${sel}&order=name`;
   let data;
   try{
@@ -109,8 +114,10 @@ function render(items){
     <div class="stat"><b>${tot.ev}</b><span>upcoming events</span></div>
     <div class="stat"><b>${tot.br}</b><span>with brand</span></div>`;
 
+  items=items.slice().sort((a,b)=>(a.hero?0:1)-(b.hero?0:1)||a.name.localeCompare(b.name));  // hero cards first
   document.getElementById("grid").innerHTML=items.map(e=>{
     const b=e.brand||{};
+    const hero=e.hero&&e.hero.url?`<div class="hero"><img src="${esc(e.hero.url)}" alt="" loading="lazy"><span class="hero-badge ${e.hero.kind==='enhanced'?'enhanced':'generated'}">${e.hero.kind==='enhanced'?'✨ AI Enhanced':'✨ AI Generated'}</span></div>`:"";
     const p=/^#[0-9a-f]{6}$/i.test(b.primary)?b.primary:"#292F7B";
     const a=/^#[0-9a-f]{6}$/i.test(b.accent)?b.accent:"#00ADEF";
     const vars=`--b:${p};--a:${a};--bname:${readable(p)};--btint:${p}14;--bline:${p}40`+
@@ -128,6 +135,7 @@ function render(items){
       return `<div class="contact">${who?`<b>${who}</b> — `:""}${bits.join(" · ")}</div>`;}).join("");
 
     return `<article class="card" style="${vars}">
+      ${hero}
       <h2>${esc(e.name)}</h2>
       <div class="row">
         <span class="badge b-mem">${esc(e.membership_level)}</span>
