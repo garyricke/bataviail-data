@@ -26,6 +26,17 @@ def _valid_time(t):
     return f"{int(m.group(1)):02d}:{m.group(2)}" if m else None
 
 
+def _denul(v):
+    """Strip NUL (0x00) bytes — Postgres text columns reject them. Recursive."""
+    if isinstance(v, str):
+        return v.replace("\x00", "")
+    if isinstance(v, list):
+        return [_denul(x) for x in v]
+    if isinstance(v, dict):
+        return {k: _denul(x) for k, x in v.items()}
+    return v
+
+
 def _valid_date(d):
     """Return YYYY-MM-DD if d is a real calendar date, else None."""
     if not d:
@@ -75,7 +86,7 @@ def apply_update(update) -> str:
 
     if DRY_RUN:
         return "skipped (dry-run)"
-    fields = update.fields
+    fields = _denul(update.fields)  # scraped content can carry NUL bytes Postgres rejects
     if not fields:
         return "no changes"
 
