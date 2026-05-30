@@ -7,12 +7,33 @@ local run. The write guard is what matters: nothing hits production in dry-run.
 from __future__ import annotations
 
 import os
+import re
+from datetime import datetime
+
 import psycopg
 from dotenv import load_dotenv
 
 from agents.config import DRY_RUN
 
 load_dotenv(override=True)
+
+
+def _valid_time(t):
+    """Return HH:MM if t is a real 24h time, else None — guards the time column."""
+    if not t:
+        return None
+    m = re.fullmatch(r"\s*([01]?\d|2[0-3]):([0-5]\d)\s*", str(t))
+    return f"{int(m.group(1)):02d}:{m.group(2)}" if m else None
+
+
+def _valid_date(d):
+    """Return YYYY-MM-DD if d is a real calendar date, else None."""
+    if not d:
+        return None
+    try:
+        return datetime.strptime(str(d).strip(), "%Y-%m-%d").strftime("%Y-%m-%d")
+    except ValueError:
+        return None
 
 
 def connect():
@@ -69,12 +90,18 @@ def apply_update(update) -> str:
 
         if "hours" in fields:  # agent owns hours → replace
             cur.execute("delete from entity_hours where entity_id=%s", (eid,))
+            n_hr = 0
             for h in fields["hours"]:
+                dw = h.get("day_of_week")
+                if not isinstance(dw, int) or not 0 <= dw <= 6:
+                    continue
                 cur.execute(
                     "insert into entity_hours (entity_id, day_of_week, opens, closes) values (%s,%s,%s,%s)",
-                    (eid, h["day_of_week"], h.get("opens") or None, h.get("closes") or None),
+                    (eid, dw, _valid_time(h.get("opens")), _valid_time(h.get("closes"))),
                 )
-            changes["hours"] = {"new_count": len(fields["hours"])}
+                n_hr += 1
+            if n_hr:
+                changes["hours"] = {"new_count": n_hr}
 
         if "services" in fields:  # replace
             cur.execute("delete from entity_services where entity_id=%s", (eid,))
@@ -115,13 +142,10 @@ def apply_update(update) -> str:
                 title = (ev.get("title") or "").strip()
                 if not title:
                     continue
-                date = (ev.get("date") or "").strip()
-                time = (ev.get("time") or "").strip()
-                starts_at = None
-                if _re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
-                    t = time if _re.fullmatch(r"\d{2}:\d{2}", time) else "00:00"
-                    starts_at = f"{date}T{t}:00"
-                dedup = _re.sub(r"\s+", " ", title.lower()).strip() + "|" + date
+                date = _valid_date(ev.get("date"))
+                time = _valid_time(ev.get("time"))
+                starts_at = f"{date}T{time or '00:00'}:00" if date else None
+                dedup = _re.sub(r"\s+", " ", title.lower()).strip() + "|" + (date or "")
                 cur.execute(
                     """insert into entity_events
                          (entity_id, title, description, starts_at, all_day, location, url, price, source, dedup_key)

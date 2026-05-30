@@ -83,16 +83,50 @@ def _synthesize(entity) -> ScoutBundle:
 
 
 # ── LIVE helpers ──────────────────────────────────────────────────────────────
-def _fetch(url: str, timeout: int = 15):
-    """Return (final_url, status, body, etag). Raises on network failure."""
+BROWSER_UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+              "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+
+
+def _do_fetch(url, ua, ctx, timeout):
     req = urllib.request.Request(url, headers={
-        "User-Agent": UA,
+        "User-Agent": ua,
         "Accept": "text/html,application/xhtml+xml",
         "Accept-Encoding": "identity",  # avoid gzip so body is plain text
     })
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        body = r.read().decode("utf-8", errors="replace")
-        return r.geturl(), r.status, body, r.headers.get("ETag")
+    with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
+        return r.geturl(), r.status, r.read().decode("utf-8", errors="replace"), r.headers.get("ETag")
+
+
+def _legacy_ssl_ctx():
+    import ssl
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    try:
+        ctx.minimum_version = ssl.TLSVersion.TLSv1
+    except Exception:
+        pass
+    try:
+        ctx.set_ciphers("DEFAULT@SECLEVEL=1")  # allow old servers' weak ciphers
+    except Exception:
+        pass
+    return ctx
+
+
+def _fetch(url: str, timeout: int = 15):
+    """Return (final_url, status, body, etag). Falls back to a browser UA on 403
+    and to permissive TLS on legacy-SSL handshake failures."""
+    try:
+        return _do_fetch(url, UA, None, timeout)
+    except urllib.error.HTTPError as e:
+        if e.code in (403, 406, 429):
+            return _do_fetch(url, BROWSER_UA, None, timeout)  # some sites block bot UAs
+        raise
+    except urllib.error.URLError as e:
+        reason = str(getattr(e, "reason", e)).upper()
+        if "SSL" in reason or "CERTIFICATE" in reason or "EOF" in reason:
+            return _do_fetch(url, BROWSER_UA, _legacy_ssl_ctx(), timeout)
+        raise
 
 
 def _html_to_text(html: str) -> str:
