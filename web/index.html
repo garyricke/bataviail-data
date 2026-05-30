@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BataviaIL — Agent-Collected Data</title>
+<style>
+  :root{
+    --navy:#292F7B; --sky:#00ADEF; --green:#60C560; --gray:#7E7F81;
+    --ink:#1c2030; --line:#e7e9f0; --bg:#f6f7fb; --card:#fff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--bg)}
+  header{background:linear-gradient(120deg,var(--navy),#3a429e);color:#fff;padding:36px 24px}
+  .wrap{max-width:1100px;margin:0 auto}
+  header h1{margin:0 0 6px;font-size:26px;letter-spacing:-.2px}
+  header p{margin:0;opacity:.85;font-size:15px}
+  .stats{display:flex;gap:28px;margin-top:20px;flex-wrap:wrap}
+  .stat b{display:block;font-size:24px}
+  .stat span{font-size:13px;opacity:.8}
+  main{max-width:1100px;margin:0 auto;padding:28px 24px 60px}
+  #status{padding:14px 16px;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--gray)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;
+        box-shadow:0 1px 2px rgba(20,24,48,.04)}
+  .card h2{margin:0;font-size:19px;letter-spacing:-.2px}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
+  .b-scraped{background:#e8f7ff;color:#0883b8}
+  .b-mem{background:#eef0fa;color:var(--navy)}
+  .summary{margin:14px 0 0;color:#3a3f52}
+  .sec{margin-top:16px}
+  .sec h3{margin:0 0 7px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--gray)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;background:#f1f3fa;border:1px solid var(--line);border-radius:8px;padding:3px 9px}
+  .chip.svc{background:#eefaef;border-color:#d6efd7;color:#2f7d34}
+  table.hours{border-collapse:collapse;font-size:13px}
+  table.hours td{padding:1px 12px 1px 0;color:#3a3f52}
+  .contact,.social a{font-size:13px}
+  .social{display:flex;flex-wrap:wrap;gap:8px}
+  .social a{color:var(--sky);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:3px 9px}
+  .social a:hover{border-color:var(--sky)}
+  .web{color:var(--navy);font-size:13px;text-decoration:none}
+  .web:hover{text-decoration:underline}
+  .foot{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-size:12px;color:var(--gray)}
+  a.contact{color:var(--navy)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Batavia, IL — Agent-Collected Data</h1>
+    <p>Live from Supabase. Each record below was discovered and structured by an AI agent
+       (scout&nbsp;→ Claude&nbsp;Sonnet&nbsp;→ database), then read here through a row-level-secured public view.</p>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+<main>
+  <div id="status">Loading agent-collected data…</div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<script>
+const SUPABASE_URL = "https://kgbudsefckrlumxikmtp.supabase.co";
+// Publishable (anon) key — safe to ship: RLS limits it to read-only public views.
+const ANON_KEY = "sb_publishable_2qxHXOJVdUh4CywqU5u5uQ_4YheJJW6";
+
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const esc = s => (s??"").toString().replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtTime = t => { if(!t) return ""; const [h,m]=t.split(":"); let H=+h; const ap=H>=12?"PM":"AM"; H=H%12||12; return `${H}:${m} ${ap}`; };
+const platIcon = p => ({facebook:"Facebook",instagram:"Instagram",linkedin:"LinkedIn",x:"X / Twitter",youtube:"YouTube",tiktok:"TikTok"}[p]||p);
+
+async function load(){
+  const sel = "name,membership_level,website,summary,categories,services,hours,social,contacts,verification_status,last_verified_by";
+  const url = `${SUPABASE_URL}/rest/v1/entity_full?last_verified_by=like.claude*&select=${sel}&order=name`;
+  let data;
+  try{
+    const r = await fetch(url, {headers:{apikey:ANON_KEY, Authorization:"Bearer "+ANON_KEY}});
+    if(!r.ok) throw new Error(`HTTP ${r.status} — ${await r.text()}`);
+    data = await r.json();
+  }catch(e){
+    document.getElementById("status").innerHTML =
+      `Could not load data: ${esc(e.message)}<br><br>If this is a CORS/file:// issue, serve the folder instead:
+       <code>cd web &amp;&amp; python3 -m http.server 8000</code> then open
+       <a href="http://localhost:8000">http://localhost:8000</a>.`;
+    return;
+  }
+  render(data);
+}
+
+function render(items){
+  document.getElementById("status").style.display = "none";
+  const totals = items.reduce((a,e)=>{
+    a.svc+=e.services.length; a.hrs+=e.hours.length; a.soc+=e.social.length; a.con+=e.contacts.length; return a;
+  },{svc:0,hrs:0,soc:0,con:0});
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><b>${items.length}</b><span>entities enriched</span></div>
+    <div class="stat"><b>${totals.svc}</b><span>services found</span></div>
+    <div class="stat"><b>${totals.hrs}</b><span>hours rows</span></div>
+    <div class="stat"><b>${totals.soc}</b><span>social links</span></div>
+    <div class="stat"><b>${totals.con}</b><span>contacts</span></div>`;
+
+  document.getElementById("grid").innerHTML = items.map(e=>{
+    const cats = (e.categories||[]).map(c=>`<span class="chip">${esc(c)}</span>`).join("");
+    const svcs = (e.services||[]).map(s=>`<span class="chip svc">${esc(s)}</span>`).join("");
+    const hours = (e.hours||[]).slice().sort((a,b)=>a.day_of_week-b.day_of_week)
+      .map(h=>`<tr><td><b>${DAYS[h.day_of_week]??"—"}</b></td><td>${esc(fmtTime(h.opens))} – ${esc(fmtTime(h.closes))}</td></tr>`).join("");
+    const social = (e.social||[]).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(platIcon(s.platform))}</a>`).join("");
+    const contacts = (e.contacts||[]).map(c=>{
+      const who = [c.name,c.title].filter(Boolean).map(esc).join(" · ");
+      const bits = [];
+      if(c.email) bits.push(`<a class="contact" href="mailto:${esc(c.email)}">${esc(c.email)}</a>`);
+      if(c.phone) bits.push(esc(c.phone));
+      return `<div class="contact">${who?`<b>${who}</b> — `:""}${bits.join(" · ")}</div>`;
+    }).join("");
+
+    return `<article class="card">
+      <h2>${esc(e.name)}</h2>
+      <div class="row">
+        <span class="badge b-mem">${esc(e.membership_level)}</span>
+        <span class="badge b-scraped">✓ ${esc(e.verification_status)}</span>
+        ${e.website?`<a class="web" href="${esc(e.website.trim())}" target="_blank" rel="noopener">${esc(e.website.trim().replace(/^https?:\/\//,""))}</a>`:""}
+      </div>
+      ${e.summary?`<p class="summary">${esc(e.summary)}</p>`:""}
+      ${cats?`<div class="sec"><h3>Categories</h3><div class="chips">${cats}</div></div>`:""}
+      ${svcs?`<div class="sec"><h3>Services (agent-found)</h3><div class="chips">${svcs}</div></div>`:""}
+      ${hours?`<div class="sec"><h3>Hours</h3><table class="hours">${hours}</table></div>`:""}
+      ${social?`<div class="sec"><h3>Social</h3><div class="social">${social}</div></div>`:""}
+      ${contacts?`<div class="sec"><h3>Contacts</h3>${contacts}</div>`:""}
+      <div class="foot">enriched by ${esc(e.last_verified_by)}</div>
+    </article>`;
+  }).join("");
+}
+load();
+</script>
+</body>
+</html>
