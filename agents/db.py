@@ -43,12 +43,87 @@ def fetch_entity(cur, *, member_id=None, name=None):
 
 
 def apply_update(update) -> str:
-    """Persist a ProposedUpdate. In DRY_RUN this is a no-op that reports intent."""
+    """Persist a ProposedUpdate DIRECTLY to live entity tables (data-build phase:
+    no review gate). Every change set is recorded in entity_changelog for audit
+    and reversibility. In DRY_RUN this is a no-op that reports intent.
+
+    Idempotent: hours and services are agent-owned and replaced wholesale;
+    social/contacts upsert; summary overwrites (old value preserved in changelog).
+    """
+    from psycopg.types.json import Json
+
     if DRY_RUN:
         return "skipped (dry-run)"
-    # Phase 0b real path (guarded until we flip DRY_RUN off):
-    #   - insert entity_hours rows
-    #   - upsert entity_social
-    #   - insert entity_news / entity_events
-    #   - write entity_changelog + entity_freshness.last_deep_enriched_at
-    raise NotImplementedError("Live writes land here once DRY_RUN is off and reviewed.")
+    fields = update.fields
+    if not fields:
+        return "no changes"
+
+    eid = update.entity_id
+    changes: dict = {}
+    with connect() as conn, conn.cursor() as cur:
+        if "summary" in fields:
+            cur.execute("select summary from entities where id=%s", (eid,))
+            old = cur.fetchone()[0]
+            cur.execute("update entities set summary=%s, updated_at=now() where id=%s", (fields["summary"], eid))
+            changes["summary"] = {"old": old, "new": fields["summary"]}
+
+        if "hours" in fields:  # agent owns hours → replace
+            cur.execute("delete from entity_hours where entity_id=%s", (eid,))
+            for h in fields["hours"]:
+                cur.execute(
+                    "insert into entity_hours (entity_id, day_of_week, opens, closes) values (%s,%s,%s,%s)",
+                    (eid, h["day_of_week"], h.get("opens") or None, h.get("closes") or None),
+                )
+            changes["hours"] = {"new_count": len(fields["hours"])}
+
+        if "services" in fields:  # replace
+            cur.execute("delete from entity_services where entity_id=%s", (eid,))
+            for s in fields["services"]:
+                cur.execute(
+                    "insert into entity_services (entity_id, name) values (%s,%s) on conflict do nothing",
+                    (eid, s),
+                )
+            changes["services"] = {"new_count": len(fields["services"])}
+
+        if "social" in fields:  # upsert
+            for plat, url in fields["social"].items():
+                cur.execute(
+                    """insert into entity_social (entity_id, platform, url) values (%s,%s,%s)
+                       on conflict (entity_id, platform) do update set url=excluded.url""",
+                    (eid, plat, url),
+                )
+            changes["social"] = list(fields["social"].keys())
+
+        if "contacts" in fields:
+            c = fields["contacts"]
+            email, phone = c.get("email"), c.get("phone")
+            if email:  # add a discovered contact only if that email isn't already on file
+                cur.execute("select 1 from entity_contacts where entity_id=%s and lower(email)=lower(%s)", (eid, email))
+                if not cur.fetchone():
+                    cur.execute(
+                        "insert into entity_contacts (entity_id, name, title, email, phone) values (%s,'Website','auto-discovered',%s,%s)",
+                        (eid, email, phone),
+                    )
+                    changes["contact"] = {"email": email, "phone": phone}
+            if phone:  # backfill the entity phone only when missing
+                cur.execute("update entities set phone=%s where id=%s and (phone is null or phone='')", (phone, eid))
+
+        # Audit + freshness + verification status
+        cur.execute(
+            """insert into entity_changelog (entity_id, source, model, confidence, changes)
+               values (%s,'agent_enrich',%s,%s,%s)""",
+            (eid, update.model, update.confidence, Json(changes)),
+        )
+        cur.execute(
+            """insert into entity_freshness (entity_id, last_checked_at, last_deep_enriched_at)
+               values (%s, now(), now())
+               on conflict (entity_id) do update set last_checked_at=now(), last_deep_enriched_at=now()""",
+            (eid,),
+        )
+        cur.execute(
+            "update entities set verification_status='scraped', last_verified_by=%s where id=%s",
+            (update.model, eid),
+        )
+        conn.commit()
+
+    return "applied: " + (", ".join(changes) if changes else "no-op")
