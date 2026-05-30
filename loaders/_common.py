@@ -1,4 +1,6 @@
 """Shared helpers for loaders: DB connection + address normalization."""
+from __future__ import annotations
+
 import os
 import re
 import psycopg
