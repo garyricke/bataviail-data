@@ -152,7 +152,9 @@ create table if not exists candidate_matches (
 -- ────────────────────────────────────────────────────────────────────────────
 -- Public read views (frontend reads ONLY these via anon key)
 -- ────────────────────────────────────────────────────────────────────────────
-create or replace view entities_summary as
+-- security_invoker=true → the view runs with the CALLER's RLS (anon), not the
+-- owner's. Without this a view bypasses base-table RLS and could leak quarantine.
+create or replace view entities_summary with (security_invoker = true) as
   select e.id, e.name, e.slug, e.summary, e.logo_url, e.website,
          e.membership_level, e.is_batavia_local, e.verification_status,
          l.city, l.state, l.zip,
@@ -164,7 +166,7 @@ create or replace view entities_summary as
   left join categories c on c.id = ec.category_id
   group by e.id, l.city, l.state, l.zip;
 
-create or replace view entity_full as
+create or replace view entity_full with (security_invoker = true) as
   select e.*,
          (select coalesce(jsonb_agg(to_jsonb(ct) - 'entity_id'), '[]') from entity_contacts ct where ct.entity_id = e.id) as contacts,
          (select coalesce(jsonb_agg(to_jsonb(s)  - 'entity_id'), '[]') from entity_social   s  where s.entity_id  = e.id) as social,
@@ -205,3 +207,21 @@ end $$;
 
 -- Quarantine + promotion tables: NO anon access at all (service-role only).
 -- (No select policy for anon → invisible to the public.)
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- Explicit Data API grants — do NOT rely on the "auto-expose new tables" toggle.
+-- RLS policies above filter ROWS; these GRANTs are the privilege layer PostgREST
+-- needs to surface a table/view at all. anon gets SELECT only, and ONLY on the
+-- public tables + read views. Quarantine tables are deliberately omitted → they
+-- never appear in the Data API.
+-- ────────────────────────────────────────────────────────────────────────────
+grant usage on schema public to anon, authenticated;
+
+grant select on
+  entities, locations, entity_location_links, categories,
+  entity_categories, entity_contacts, entity_social, entity_hours,
+  entities_summary, entity_full
+to anon, authenticated;
+
+-- Loaders/agents authenticate with the service_role key, which bypasses RLS and
+-- already has full privileges — no grants needed for them.
