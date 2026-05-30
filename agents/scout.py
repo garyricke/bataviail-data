@@ -1,75 +1,198 @@
 """Scout: gather raw signals about an entity (homepage, search, social).
 
-DRY_RUN synthesizes a deterministic bundle from what we already know — no network,
-no cost — so the downstream enrich/apply steps have realistic input. The real
-implementation (Brave Search + homepage fetch + cache by URL/etag) slots into
-`_scout_live` later.
+DRY_RUN synthesizes a deterministic bundle (no network, no cost). `_scout_live`
+does the real thing: fetch the homepage, extract socials/contacts via regex, run
+an optional Brave search, and cache the raw body in scout_cache for change
+detection. Run a single live scout with `python -m agents.scout_one`.
 """
 from __future__ import annotations
 
 import asyncio
 import hashlib
+import json
+import os
+import re
+import urllib.error
+import urllib.parse
+import urllib.request
 from dataclasses import dataclass, field
 
 from agents.config import DRY_RUN
 
 KNOWN_PLATFORMS = ["facebook", "instagram", "linkedin", "x"]
+UA = "Mozilla/5.0 (compatible; BataviaILBot/0.1; +https://batavia.example/bot)"
+
+SOCIAL_RE = re.compile(
+    r'https?://(?:www\.)?(facebook|instagram|linkedin|twitter|x|youtube|tiktok)\.com/[^\s"\'<>)]+',
+    re.I,
+)
+EMAIL_RE = re.compile(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
+PHONE_RE = re.compile(r'\(?\b\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b')
+TITLE_RE = re.compile(r'<title[^>]*>(.*?)</title>', re.I | re.S)
 
 
 @dataclass
 class ScoutBundle:
     entity_id: str
-    changed: bool                      # cheap freshness check result
+    changed: bool                        # cheap freshness check result
+    source: str = "dry-run"
+    final_url: str = ""
+    status: int = 0
+    title: str = ""
     homepage_text: str = ""
     search_snippets: list[str] = field(default_factory=list)
     discovered_hours: list[dict] = field(default_factory=list)
     discovered_social: dict = field(default_factory=dict)
+    discovered_contacts: dict = field(default_factory=dict)
     discovered_news: list[str] = field(default_factory=list)
-    source: str = "dry-run"
 
 
+# ── DRY-RUN synthesis ─────────────────────────────────────────────────────────
 def _seed(entity) -> int:
     return int(hashlib.sha1(str(entity["id"]).encode()).hexdigest(), 16)
 
 
 def _synthesize(entity) -> ScoutBundle:
-    """Deterministic fake 'discoveries' derived from the entity's own gaps."""
     s = _seed(entity)
     opens = ["08:00", "09:00", "10:00"][s % 3]
     closes = ["17:00", "18:00", "20:00"][(s // 3) % 3]
-
     hours = []
-    if not entity["has_hours"]:  # fill the universal gap
-        for dow in range(1, 6):  # Mon–Fri
+    if not entity["has_hours"]:
+        for dow in range(1, 6):
             hours.append({"day_of_week": dow, "opens": opens, "closes": closes})
-
-    # Propose a social platform the entity doesn't already have.
     missing = [p for p in KNOWN_PLATFORMS if p not in entity["socials"]]
     social = {}
     if missing:
         plat = missing[s % len(missing)]
         handle = entity["name"].lower().replace(" ", "").replace(",", "")[:20]
         social = {plat: f"https://{plat}.com/{handle}"}
-
-    news = [f"[synthetic] {entity['name']} featured in a Batavia community spotlight"]
     return ScoutBundle(
-        entity_id=entity["id"], changed=True,
+        entity_id=entity["id"], changed=True, source="dry-run",
         homepage_text=f"[synthetic homepage text for {entity['name']}]",
         search_snippets=[f"{entity['name']} — Batavia, IL"],
-        discovered_hours=hours, discovered_social=social, discovered_news=news,
+        discovered_hours=hours, discovered_social=social,
+        discovered_news=[f"[synthetic] {entity['name']} featured in a Batavia spotlight"],
     )
 
 
-async def _scout_live(entity) -> ScoutBundle:  # pragma: no cover - Phase 0b real path
-    raise NotImplementedError(
-        "Live scout (Brave Search + homepage fetch + scout_cache) lands here once "
-        "BRAVE_API_KEY is set and DRY_RUN is off."
+# ── LIVE helpers ──────────────────────────────────────────────────────────────
+def _fetch(url: str, timeout: int = 15):
+    """Return (final_url, status, body, etag). Raises on network failure."""
+    req = urllib.request.Request(url, headers={
+        "User-Agent": UA,
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Encoding": "identity",  # avoid gzip so body is plain text
+    })
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        body = r.read().decode("utf-8", errors="replace")
+        return r.geturl(), r.status, body, r.headers.get("ETag")
+
+
+def _html_to_text(html: str) -> str:
+    html = re.sub(r'<(script|style)[^>]*>.*?</\1>', ' ', html, flags=re.I | re.S)
+    text = re.sub(r'<[^>]+>', ' ', html)
+    text = re.sub(r'&[a-z]+;', ' ', text)
+    return re.sub(r'\s+', ' ', text).strip()
+
+
+def _extract_socials(html: str) -> dict:
+    out = {}
+    for m in SOCIAL_RE.finditer(html):
+        plat = m.group(1).lower()
+        plat = "x" if plat in ("twitter", "x") else plat
+        out.setdefault(plat, m.group(0).rstrip('/").,'))
+    return out
+
+
+EMAIL_PLACEHOLDERS = ("domain.com", "example.com", "example.org", "yourname",
+                      "your@email", "email@", "sentry.io", "wixpress.com")
+
+
+def _extract_contacts(html: str, text: str) -> dict:
+    out = {}
+    emails = [
+        e for e in EMAIL_RE.findall(html)
+        if not e.lower().endswith((".png", ".jpg", ".gif"))
+        and not any(p in e.lower() for p in EMAIL_PLACEHOLDERS)
+    ]
+    if emails:
+        out["email"] = emails[0]
+    phones = PHONE_RE.findall(text)
+    if phones:
+        out["phone"] = phones[0]
+    return out
+
+
+def _brave_search(query: str, n: int = 3) -> list[str]:
+    key = os.environ.get("BRAVE_API_KEY")
+    if not key:
+        return []  # graceful: skip search when no key
+    url = "https://api.search.brave.com/res/v1/web/search?q=" + urllib.parse.quote(query)
+    req = urllib.request.Request(url, headers={"X-Subscription-Token": key, "Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            data = json.loads(r.read())
+        return [f"{x.get('title','')} - {x.get('description','')}"
+                for x in data.get("web", {}).get("results", [])[:n]]
+    except Exception:
+        return []  # search is best-effort; never let it break the scout
+
+
+def _cache_get(url: str):
+    from agents.db import connect
+    with connect() as c, c.cursor() as cur:
+        cur.execute("select content_hash from scout_cache where url=%s", (url,))
+        row = cur.fetchone()
+    return row[0] if row else None
+
+
+def _cache_put(url, status, etag, content_hash, body):
+    from agents.db import connect
+    with connect() as c, c.cursor() as cur:
+        cur.execute("""
+            insert into scout_cache (url, status, etag, content_hash, body, fetched_at)
+            values (%s,%s,%s,%s,%s, now())
+            on conflict (url) do update set
+              status=excluded.status, etag=excluded.etag,
+              content_hash=excluded.content_hash, body=excluded.body,
+              fetched_at=now()
+        """, (url, status, etag, content_hash, body[:500_000]))
+        c.commit()
+
+
+async def _scout_live(entity) -> ScoutBundle:
+    url = entity["website"]
+    if not url:
+        return ScoutBundle(entity_id=entity["id"], changed=False, source="live",
+                           discovered_news=["no website on record — needs discovery"])
+    if not url.startswith("http"):
+        url = "http://" + url
+
+    final_url, status, body, etag = await asyncio.to_thread(_fetch, url)
+    content_hash = hashlib.sha256(body.encode("utf-8", "replace")).hexdigest()
+    prev = _cache_get(final_url)
+    changed = prev != content_hash
+    _cache_put(final_url, status, etag, content_hash, body)
+
+    text = _html_to_text(body)
+    title_m = TITLE_RE.search(body)
+    socials = {p: u for p, u in _extract_socials(body).items() if p not in entity["socials"]}
+    snippets = await asyncio.to_thread(_brave_search, f'{entity["name"]} Batavia IL hours')
+
+    return ScoutBundle(
+        entity_id=entity["id"], changed=changed, source="live",
+        final_url=final_url, status=status,
+        title=(title_m.group(1).strip() if title_m else ""),
+        homepage_text=text[:4000],
+        search_snippets=snippets,
+        discovered_social=socials,
+        discovered_contacts=_extract_contacts(body, text),
     )
 
 
 async def scout(entity) -> ScoutBundle:
     """Cheap freshness check first; only deep-scout on detected change."""
-    await asyncio.sleep(0)  # placeholder for real async I/O
     if DRY_RUN:
+        await asyncio.sleep(0)
         return _synthesize(entity)
     return await _scout_live(entity)

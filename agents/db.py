@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 from agents.config import DRY_RUN
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 def connect():

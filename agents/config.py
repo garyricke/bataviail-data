@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)  # .env is authoritative — don't let global shell env leak in
 
 # ── Mode ──────────────────────────────────────────────────────────────────────
 # DRY_RUN: no network, no LLM calls, no DB writes. Enrichment is synthesized

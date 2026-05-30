@@ -6,7 +6,7 @@ import re
 import psycopg
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)  # .env is authoritative — don't let global shell env leak in
 
 SEED_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "seed")
 

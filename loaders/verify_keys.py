@@ -15,7 +15,7 @@ import urllib.error
 import urllib.request
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 BASE = os.environ["SUPABASE_URL"].rstrip("/") + "/rest/v1"
 PUB = os.environ["SUPABASE_ANON_KEY"]
