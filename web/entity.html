@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Batavia, IL</title>
+<style>
+  :root{--navy:#292F7B;--sky:#00ADEF;--gray:#7E7F81;--ink:#1c2030;--line:#e7e9f0;--bg:#fff;
+        --b:#292F7B;--a:#00ADEF;--bname:#292F7B;--btint:#eef0fa;--bline:#dfe3f5;--bfont:inherit}
+  *{box-sizing:border-box}
+  body{margin:0;font:17px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#f4f5f8}
+  a{color:var(--bname)}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;align-items:center;
+          padding:12px 18px;background:rgba(255,255,255,.0);transition:.2s}
+  .topbar.solid{background:rgba(255,255,255,.96);box-shadow:0 1px 6px rgba(20,24,48,.08)}
+  .topbar a{color:#fff;text-decoration:none;font-weight:600;font-size:14px;background:rgba(0,0,0,.28);padding:7px 14px;border-radius:999px;backdrop-filter:blur(6px)}
+  .topbar.solid a{color:var(--bname);background:var(--btint)}
+  .hero{position:relative;min-height:62vh;display:flex;align-items:flex-end;background:#222}
+  .hero .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .hero::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.08) 30%,rgba(0,0,0,.55) 100%)}
+  .hero .inner{position:relative;z-index:2;max-width:880px;margin:0 auto;width:100%;padding:0 24px 34px;color:#fff}
+  .hero h1{margin:0 0 8px;font-size:clamp(30px,5vw,48px);line-height:1.08;font-family:var(--bfont);letter-spacing:-.5px;text-shadow:0 2px 18px rgba(0,0,0,.4)}
+  .hero .tags{display:flex;gap:8px;flex-wrap:wrap}
+  .tag{font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px;background:rgba(255,255,255,.92);color:#222}
+  .tag.brand{background:var(--b);color:#fff}
+  .thumbs{position:absolute;right:18px;bottom:18px;z-index:3;display:flex;gap:7px}
+  .thumb{width:54px;height:40px;border-radius:7px;object-fit:cover;cursor:pointer;border:2px solid rgba(255,255,255,.7)}
+  .thumb.active{border-color:var(--a)}
+  .nobrand-hero{min-height:38vh;background:linear-gradient(120deg,var(--b),var(--a))}
+  main{max-width:880px;margin:-2px auto 0;background:#fff;border-radius:18px 18px 0 0;padding:8px 24px 60px;position:relative;z-index:5}
+  .bar{height:5px;background:var(--b);border-radius:0 0 4px 4px;width:74px;margin:0 auto 26px}
+  section{padding:22px 0;border-top:1px solid var(--line)}
+  section:first-of-type{border-top:0}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--bname);margin:0 0 12px;font-weight:800}
+  .about{font-size:20px;line-height:1.6;color:#2a2f3e;margin:0}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:14px;background:var(--btint);border:1px solid var(--bline);color:var(--bname);border-radius:9px;padding:6px 12px}
+  .ev{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .ev:last-child{border-bottom:0}
+  .ev .date{flex:0 0 78px;color:var(--a);font-weight:700;font-size:14px;line-height:1.3}
+  .ev .t{font-weight:600}.ev .m{font-size:14px;color:var(--gray)}
+  table.hours{border-collapse:collapse;font-size:15px}
+  table.hours td{padding:3px 22px 3px 0}table.hours td:first-child{font-weight:700;color:#444}
+  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .contact-grid .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:3px}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+  .btn{display:inline-block;text-decoration:none;font-weight:600;font-size:14px;padding:9px 16px;border-radius:10px}
+  .btn.primary{background:var(--b);color:#fff}.btn.ghost{background:var(--btint);color:var(--bname)}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .gallery img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px}
+  .foot{max-width:880px;margin:0 auto;padding:24px;text-align:center;color:var(--gray);font-size:14px}
+  .foot a{color:var(--bname)}
+  @media(max-width:620px){.contact-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar" id="topbar"><a href="index.html">← Batavia Directory</a><a id="site-link" href="#" target="_blank" rel="noopener" style="display:none">Visit website ↗</a></div>
+<div id="page"></div>
+
+<script>
+const SUPABASE_URL="https://kgbudsefckrlumxikmtp.supabase.co";
+const ANON_KEY="sb_publishable_2qxHXOJVdUh4CywqU5u5uQ_4YheJJW6";
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const esc=s=>(s??"").toString().replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtT=t=>{if(!t)return"";const[h,m]=t.split(":");let H=+h;const ap=H>=12?"PM":"AM";H=H%12||12;return`${H}:${m} ${ap}`};
+const plat=p=>({facebook:"Facebook",instagram:"Instagram",linkedin:"LinkedIn",x:"X",youtube:"YouTube",tiktok:"TikTok"}[p]||p);
+const lum=h=>{const[r,g,b]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);return .2126*r+.7152*g+.0722*b};
+const readable=h=>(h&&/^#[0-9a-f]{6}$/i.test(h)&&lum(h)<.72)?h:"#2a2f45";
+const evd=s=>{if(!s)return{d:"Date TBD",m:""};const dt=new Date(s);if(isNaN(dt))return{d:"Date TBD",m:""};
+  const ht=!/T00:00/.test(s);return{d:`${DAYS[dt.getDay()]}<br>${MON[dt.getMonth()]} ${dt.getDate()}`,m:ht?dt.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):""}};
+
+const id=new URLSearchParams(location.search).get("id");
+if(!id){document.getElementById("page").innerHTML="<p style='padding:40px'>No entity specified. <a href='index.html'>← Back</a></p>";}
+else load();
+
+async function load(){
+  const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,hero,media,location,verification_status";
+  let e;
+  try{
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/entity_full?id=eq.${id}&select=${sel}`,{headers:{apikey:ANON_KEY,Authorization:"Bearer "+ANON_KEY}});
+    e=(await r.json())[0];
+  }catch(err){}
+  if(!e){document.getElementById("page").innerHTML="<p style='padding:40px'>Not found. <a href='index.html'>← Back</a></p>";return;}
+  document.title=e.name+" — Batavia, IL";
+  render(e);
+}
+
+function render(e){
+  const b=e.brand||{};
+  const p=/^#[0-9a-f]{6}$/i.test(b.primary)?b.primary:"#292F7B";
+  const a=/^#[0-9a-f]{6}$/i.test(b.accent)?b.accent:"#00ADEF";
+  const root=document.documentElement.style;
+  root.setProperty("--b",p);root.setProperty("--a",a);root.setProperty("--bname",readable(p));
+  root.setProperty("--btint",p+"14");root.setProperty("--bline",p+"40");
+  if(b.font_heading){root.setProperty("--bfont",`'${b.font_heading}',Georgia,serif`);
+    const l=document.createElement("link");l.rel="stylesheet";
+    l.href=`https://fonts.googleapis.com/css2?family=${encodeURIComponent(b.font_heading).replace(/%20/g,"+")}&display=swap`;document.head.appendChild(l);}
+
+  const heroUrl=e.hero&&e.hero.url;
+  const tags=`<div class="tags">${e.membership_level&&e.membership_level!=='Unknown'?`<span class="tag brand">${esc(e.membership_level)}</span>`:""}${(e.categories||[]).slice(0,3).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}</div>`;
+  const media=(e.media&&e.media.length>1)?e.media:[];
+  const thumbs=media.length?`<div class="thumbs">${media.map((m,i)=>`<img class="thumb${i===0?' active':''}" src="${esc(m.url)}" data-url="${esc(m.url)}">`).join("")}</div>`:"";
+  const hero = heroUrl
+    ? `<div class="hero" id="hero"><img class="hero-bg" id="hero-bg" src="${esc(heroUrl)}" alt="">${thumbs}<div class="inner"><h1>${esc(e.name)}</h1>${tags}</div></div>`
+    : `<div class="hero nobrand-hero"><div class="inner"><h1>${esc(e.name)}</h1>${tags}</div></div>`;
+
+  const services=(e.services||[]).map(s=>`<span class="chip">${esc(s)}</span>`).join("");
+  const events=(e.events||[]).map(x=>{const f=evd(x.starts_at);const meta=[f.m,x.location,x.price].filter(Boolean).map(esc).join(" · ");
+    return `<div class="ev"><div class="date">${f.d}</div><div><div class="t">${esc(x.title)}</div>${x.description?`<div class="m">${esc(x.description)}</div>`:""}${meta?`<div class="m">${meta}</div>`:""}</div></div>`}).join("");
+  const hours=(e.hours||[]).slice().sort((x,y)=>x.day_of_week-y.day_of_week).map(h=>`<tr><td>${DAYS[h.day_of_week]}</td><td>${esc(fmtT(h.opens))} – ${esc(fmtT(h.closes))}</td></tr>`).join("");
+  const loc=e.location&&e.location.address?[e.location.address,e.location.city,e.location.state,e.location.zip].filter(Boolean).join(", "):"";
+  const social=(e.social||[]).map(s=>`<a class="btn ghost" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(plat(s.platform))}</a>`).join("");
+  const contacts=(e.contacts||[]).map(c=>{const who=[c.name,c.title].filter(Boolean).map(esc).join(" · ");const bits=[];
+    if(c.phone)bits.push(esc(c.phone));if(c.email)bits.push(`<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`);
+    return who||bits.length?`<div>${who?`<b>${who}</b><br>`:""}${bits.join(" · ")}</div>`:""}).join("");
+  const galleryImgs=(e.media&&e.media.length>1)?e.media.map(m=>`<img src="${esc(m.url)}" loading="lazy" alt="">`).join(""):"";
+
+  document.getElementById("site-link").style.display=e.website?"inline-block":"none";
+  if(e.website)document.getElementById("site-link").href=e.website.trim();
+
+  document.getElementById("page").innerHTML=`${hero}
+    <main>
+      <div class="bar"></div>
+      ${e.summary?`<section><h2>About</h2><p class="about">${esc(e.summary)}</p></section>`:""}
+      ${services?`<section><h2>Products &amp; Services</h2><div class="chips">${services}</div></section>`:""}
+      ${events?`<section><h2>Upcoming Events</h2>${events}</section>`:""}
+      ${hours?`<section><h2>Hours</h2><table class="hours">${hours}</table></section>`:""}
+      <section><h2>Contact &amp; Location</h2>
+        <div class="contact-grid">
+          ${loc?`<div><div class="lbl">Address</div><a href="https://maps.google.com/?q=${encodeURIComponent(loc)}" target="_blank" rel="noopener">${esc(loc)}</a></div>`:""}
+          ${contacts?`<div><div class="lbl">Reach out</div>${contacts}</div>`:""}
+        </div>
+        <div class="btns">${e.website?`<a class="btn primary" href="${esc(e.website.trim())}" target="_blank" rel="noopener">Visit website ↗</a>`:""}${social}</div>
+      </section>
+      ${galleryImgs?`<section><h2>Gallery</h2><div class="gallery">${galleryImgs}</div></section>`:""}
+    </main>
+    <div class="foot">Part of the <a href="index.html">Batavia community directory</a> · ${esc(e.verification_status||"")}</div>`;
+
+  // hero thumbnail swap
+  document.querySelectorAll(".thumb").forEach(t=>t.addEventListener("click",()=>{
+    document.getElementById("hero-bg").src=t.dataset.url;
+    document.querySelectorAll(".thumb").forEach(x=>x.classList.remove("active"));t.classList.add("active");}));
+  // topbar solidifies on scroll
+  const tb=document.getElementById("topbar");
+  addEventListener("scroll",()=>tb.classList.toggle("solid",scrollY>window.innerHeight*0.5));
+}
+</script>
+</body>
+</html>

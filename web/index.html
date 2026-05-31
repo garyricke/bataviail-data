@@ -53,6 +53,18 @@
   .contact{font-size:13px}.contact a{color:var(--bname,var(--navy))}
   .foot{margin-top:14px;padding-top:11px;border-top:1px dashed var(--line);font-size:11px;color:var(--gray);display:flex;gap:8px;align-items:center}
   .sw{width:11px;height:11px;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,.1)}
+  /* condensed cards that open entity.html */
+  .grid{grid-template-columns:repeat(auto-fill,minmax(285px,1fr))}
+  .card{display:block;padding:0;border-top-width:4px;text-decoration:none;color:inherit;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(20,24,48,.13)}
+  .hero{margin:0;border-radius:13px 13px 0 0;aspect-ratio:16/10}
+  .hero.noimg{background:linear-gradient(120deg,var(--b,#292F7B),var(--a,#00ADEF))}
+  .hero .count{position:absolute;right:10px;bottom:10px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:999px}
+  .card h2{margin:14px 16px 0;font-size:18px}
+  .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:7px 16px 0}
+  .cat{font-size:12px;color:var(--gray)}
+  .addr{margin:8px 16px 0;font-size:12.5px}
+  .teaser{margin:8px 16px 16px;font-size:13.5px;color:#464d5e;line-height:1.5}
 </style>
 </head>
 <body>
@@ -87,7 +99,7 @@ const ev=s=>{ // format an event datetime
 };
 
 async function load(){
-  const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,hero,media,location,verification_status,last_verified_by";
+  const sel="id,name,membership_level,summary,categories,services,events,brand,hero,media,location";
   const url=`${SUPABASE_URL}/rest/v1/entity_full?or=(last_verified_by.like.claude*,hero.not.is.null)&select=${sel}&order=name`;
   let data;
   try{
@@ -126,54 +138,27 @@ function render(items){
   document.getElementById("grid").innerHTML=items.map(e=>{
     const b=e.brand||{};
     const hk=e.hero&&e.hero.kind;
-    const hbadge=hk==='community'?'📷 Community Photo':hk==='enhanced'?'✨ AI Enhanced':'✨ AI Generated';
-    const gallery=(e.media&&e.media.length>1)?`<div class="thumbs">${e.media.map((m,i)=>`<img class="thumb${i===0?' active':''}" src="${esc(m.url)}" data-url="${esc(m.url)}" loading="lazy" alt="">`).join("")}</div>`:"";
-    const hero=e.hero&&e.hero.url?`<div class="hero"><img class="hero-img" src="${esc(e.hero.url)}" alt="" loading="lazy"><span class="hero-badge ${hk}">${hbadge}</span></div>${gallery}`:"";
+    const hbadge=hk==='community'?'📷 Community Photo':hk==='enhanced'?'✨ AI Enhanced':hk==='generated'?'✨ AI Generated':'';
     const p=/^#[0-9a-f]{6}$/i.test(b.primary)?b.primary:"#292F7B";
     const a=/^#[0-9a-f]{6}$/i.test(b.accent)?b.accent:"#00ADEF";
     const vars=`--b:${p};--a:${a};--bname:${readable(p)};--btint:${p}14;--bline:${p}40`+
                (b.font_heading?`;--bfont:'${esc(b.font_heading)}',Georgia,serif`:"");
-    const cats=(e.categories||[]).map(c=>`<span class="chip">${esc(c)}</span>`).join("");
-    const svcs=(e.services||[]).map(s=>`<span class="chip svc">${esc(s)}</span>`).join("");
-    const hours=(e.hours||[]).slice().sort((x,y)=>x.day_of_week-y.day_of_week)
-      .map(h=>`<tr><td><b>${DAYS[h.day_of_week]??"—"}</b></td><td>${esc(fmtT(h.opens))} – ${esc(fmtT(h.closes))}</td></tr>`).join("");
-    const events=(e.events||[]).map(x=>{const f=ev(x.starts_at);
-      const meta=[f.m,x.location,x.price].filter(Boolean).map(esc).join(" · ");
-      return `<div class="ev"><div class="d">${esc(f.d)}</div><div class="t">${esc(x.title)}</div>${meta?`<div class="m">${meta}</div>`:""}</div>`;}).join("");
-    const social=(e.social||[]).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(platName(s.platform))}</a>`).join("");
-    const contacts=(e.contacts||[]).map(c=>{const who=[c.name,c.title].filter(Boolean).map(esc).join(" · ");
-      const bits=[];if(c.email)bits.push(`<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`);if(c.phone)bits.push(esc(c.phone));
-      return `<div class="contact">${who?`<b>${who}</b> — `:""}${bits.join(" · ")}</div>`;}).join("");
-
-    return `<article class="card" style="${vars}">
+    const extra=(e.media&&e.media.length>1)?`<span class="count">+${e.media.length-1}</span>`:"";
+    const hero=e.hero&&e.hero.url
+      ?`<div class="hero"><img src="${esc(e.hero.url)}" alt="" loading="lazy">${hbadge?`<span class="hero-badge ${hk}">${hbadge}</span>`:""}${extra}</div>`
+      :`<div class="hero noimg"></div>`;
+    const cat=(e.categories||[])[0]||"";
+    const addr=e.location&&e.location.address?[e.location.address,e.location.city].filter(Boolean).join(", "):"";
+    const teaser=e.summary?esc(e.summary.length>118?e.summary.slice(0,118).replace(/\s+\S*$/,"")+"…":e.summary):"";
+    return `<a class="card" style="${vars}" href="entity.html?id=${e.id}">
       ${hero}
       <h2>${esc(e.name)}</h2>
-      <div class="row">
-        <span class="badge b-mem">${esc(e.membership_level)}</span>
-        <span class="badge b-ver">✓ enriched</span>
-        ${e.website?`<a class="web" href="${esc(e.website.trim())}" target="_blank" rel="noopener">${esc(e.website.trim().replace(/^https?:\/\//,"").replace(/\/$/,""))}</a>`:""}
-      </div>
-      ${e.location&&e.location.address?`<div class="addr">📍 <a href="https://maps.google.com/?q=${encodeURIComponent([e.location.address,e.location.city,e.location.state,e.location.zip].filter(Boolean).join(', '))}" target="_blank" rel="noopener">${esc([e.location.address,e.location.city,e.location.state].filter(Boolean).join(', '))} ${esc(e.location.zip||'')}</a></div>`:""}
-      ${e.summary?`<p class="summary">${esc(e.summary)}</p>`:""}
-      ${events?`<div class="sec"><h3>Upcoming Events</h3>${events}</div>`:""}
-      ${svcs?`<div class="sec"><h3>Services</h3><div class="chips">${svcs}</div></div>`:""}
-      ${hours?`<div class="sec"><h3>Hours</h3><table class="hours">${hours}</table></div>`:""}
-      ${cats?`<div class="sec"><h3>Categories</h3><div class="chips">${cats}</div></div>`:""}
-      ${social?`<div class="sec"><h3>Social</h3><div class="social">${social}</div></div>`:""}
-      ${contacts?`<div class="sec"><h3>Contacts</h3>${contacts}</div>`:""}
-      <div class="foot">
-        ${b.primary?`<span class="sw" style="background:${esc(p)}"></span><span class="sw" style="background:${esc(a)}"></span>`:""}
-        <span>enriched by ${esc(e.last_verified_by||"agent")}${b.font_heading?` · ${esc(b.font_heading)}`:""}</span>
-      </div>
-    </article>`;
+      <div class="meta">${(e.membership_level&&e.membership_level!=='Unknown')?`<span class="badge b-mem">${esc(e.membership_level)}</span>`:""}${cat?`<span class="cat">${esc(cat)}</span>`:""}</div>
+      ${addr?`<div class="addr">📍 ${esc(addr)}</div>`:""}
+      ${teaser?`<p class="teaser">${teaser}</p>`:""}
+    </a>`;
   }).join("");
 }
-// click a thumbnail → swap the card's main hero image
-document.getElementById("grid").addEventListener("click",ev=>{
-  const t=ev.target.closest(".thumb"); if(!t)return;
-  const card=t.closest(".card"), main=card&&card.querySelector(".hero-img");
-  if(main){main.src=t.dataset.url; card.querySelectorAll(".thumb").forEach(x=>x.classList.remove("active")); t.classList.add("active");}
-});
 load();
 </script>
 </body>
