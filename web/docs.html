@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BataviaIL Data — How It Works</title>
+<style>
+  :root{--navy:#292F7B;--sky:#00ADEF;--green:#60C560;--gray:#7E7F81;--ink:#1c2030;--line:#e5e8f0;--bg:#f6f7fb;--code:#1b1f2e}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--navy)}
+  header{background:linear-gradient(120deg,var(--navy),#3a429e);color:#fff;padding:42px 24px}
+  header .w{max-width:1080px;margin:0 auto}
+  header h1{margin:0 0 8px;font-size:30px;letter-spacing:-.3px}
+  header p{margin:0;opacity:.9;max-width:720px}
+  header .nav{margin-top:18px;display:flex;gap:14px;flex-wrap:wrap;font-size:14px}
+  header .nav a{color:#cfe9ff;text-decoration:none;border:1px solid rgba(255,255,255,.3);padding:5px 12px;border-radius:999px}
+  .layout{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:230px 1fr;gap:34px;padding:28px 24px 80px}
+  nav.toc{position:sticky;top:18px;align-self:start;font-size:14px;max-height:calc(100vh - 36px);overflow:auto}
+  nav.toc a{display:block;color:#555;text-decoration:none;padding:5px 10px;border-left:2px solid transparent;border-radius:0 6px 6px 0}
+  nav.toc a:hover{color:var(--navy);background:#eef0fa}
+  nav.toc strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--gray);margin:14px 0 4px 10px}
+  main h2{font-size:22px;margin:38px 0 10px;padding-top:10px;border-top:1px solid var(--line);letter-spacing:-.2px}
+  main h2:first-child{border-top:0;margin-top:0}
+  main h3{font-size:16px;margin:22px 0 6px;color:var(--navy)}
+  main p,main li{color:#33384a}
+  .lead{font-size:17px}
+  code{background:#eef0f6;padding:1px 6px;border-radius:5px;font-size:13.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  pre{background:var(--code);color:#e8ecf7;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.5}
+  pre code{background:none;padding:0;color:inherit}
+  table{border-collapse:collapse;width:100%;margin:10px 0;font-size:14px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--gray);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+  td code{font-size:12.5px}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:14px 0;font-size:13px}
+  .flow .b{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 13px;font-weight:600}
+  .flow .b small{display:block;font-weight:400;color:var(--gray);font-size:11px}
+  .flow .ar{color:var(--sky);font-weight:700}
+  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin:14px 0}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .stat b{display:block;font-size:26px;color:var(--navy)}
+  .stat span{font-size:12px;color:var(--gray)}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .done{background:#e9f7ea;color:#2f7d34}.next{background:#fff3e0;color:#b5641a}.soon{background:#eef0fa;color:var(--navy)}
+  .note{background:#eef6ff;border:1px solid #d4e7fb;border-radius:10px;padding:12px 14px;font-size:14px;margin:12px 0}
+  ul{margin:8px 0;padding-left:22px}
+  @media(max-width:820px){.layout{grid-template-columns:1fr}nav.toc{display:none}}
+</style>
+</head>
+<body>
+<header><div class="w">
+  <h1>BataviaIL Data — How It Works</h1>
+  <p>A data-first community platform for Batavia, IL: a Supabase source-of-truth grown by an AI agent swarm,
+     with a public directory and a mobile photo-capture app. This page explains every piece.</p>
+  <div class="nav">
+    <a href="index.html">← Directory</a>
+    <a href="capture.html">Capture app</a>
+    <a href="https://github.com/garyricke/bataviail-data" target="_blank">GitHub</a>
+  </div>
+</div></header>
+
+<div class="layout">
+<nav class="toc">
+  <strong>Contents</strong>
+  <a href="#overview">Overview</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#data">Data model</a>
+  <a href="#pipeline">The agent pipeline</a>
+  <a href="#images">Hero images</a>
+  <a href="#capture">The capture app</a>
+  <a href="#frontend">Frontend & security</a>
+  <a href="#state">Current state</a>
+  <a href="#costs">Costs</a>
+  <a href="#run">How to run it</a>
+  <a href="#next">Next steps</a>
+</nav>
+
+<main>
+  <h2 id="overview">Overview</h2>
+  <p class="lead">The core product is the <strong>data</strong>. Instead of building a website and stuffing
+  data into it, we built a structured database first, then grew it automatically and put thin interfaces on top.</p>
+  <p>Every Batavia organization is an <em>entity</em> in a Postgres database. AI agents visit each org's website,
+  read it, and extract structured facts — what it does, its services, hours, events, social links, contacts, and
+  even its brand colors and fonts. A second track lets people capture real photos on location that get styled to a
+  consistent professional look. Two front-ends read this data live: a public <strong>directory</strong> and a
+  mobile <strong>capture app</strong>.</p>
+  <p><strong>Why data-first?</strong> Because the data outlives any one interface. The same database can power a
+  directory today, a newsletter tomorrow, and a personalized app later — without re-collecting anything.</p>
+
+  <h2 id="architecture">Architecture</h2>
+  <p>Three layers, one source of truth:</p>
+  <div class="flow">
+    <div class="b">Agent swarm<small>Python · scout + Claude</small></div>
+    <div class="ar">→</div>
+    <div class="b">Supabase Postgres<small>source of truth + Storage</small></div>
+    <div class="ar">←</div>
+    <div class="b">Static front-ends<small>directory + capture PWA</small></div>
+  </div>
+  <ul>
+    <li><strong>Supabase Postgres</strong> is the single source of truth. All reads and writes go through it.
+      Row-Level Security (RLS) governs who sees what.</li>
+    <li><strong>The agent swarm</strong> (Python scripts) writes <em>into</em> the database — scraping, enriching,
+      and image processing — using the secret key, which bypasses RLS.</li>
+    <li><strong>The front-ends</strong> are plain static HTML (no build step). They read through the public
+      <code>anon</code> key, which RLS limits to read-only public views. Hosted on Netlify.</li>
+    <li><strong>Supabase Storage</strong> holds the hero images (public bucket) and raw photo uploads.</li>
+  </ul>
+  <div class="note">Nothing sensitive ships to the browser. The page carries only the <em>publishable</em> key,
+  and RLS makes it read-only and blind to internal tables (like the raw FOIA quarantine).</div>
+
+  <h2 id="data">Data model</h2>
+  <p>The database is organized around a clean <strong>entity</strong> with satellite tables for each kind of fact,
+  plus a quarantine zone for unverified inputs.</p>
+  <h3>Public-facing</h3>
+  <table>
+    <tr><th>Table</th><th>What it holds</th></tr>
+    <tr><td><code>entities</code></td><td>The core org: name, summary, website, membership, verification status, <code>brand</code> (jsonb), <code>hero</code> (jsonb). No address column — addresses are separate (multi-tenant).</td></tr>
+    <tr><td><code>locations</code> + <code>entity_location_links</code></td><td>Addresses, linked many-to-many (one address can house several orgs).</td></tr>
+    <tr><td><code>entity_services</code></td><td>Services / programs offered.</td></tr>
+    <tr><td><code>entity_events</code></td><td>Dated events (the view shows upcoming only).</td></tr>
+    <tr><td><code>entity_hours</code>, <code>entity_contacts</code>, <code>entity_social</code>, <code>categories</code></td><td>Hours, contacts, social links, category tags.</td></tr>
+  </table>
+  <h3>Quarantine & promotion (never public)</h3>
+  <table>
+    <tr><td><code>foia_records</code></td><td>5,455 raw FOIA inspection rows. Quarantined — they earn promotion to entities, never write directly.</td></tr>
+    <tr><td><code>entity_candidates</code>, <code>candidate_matches</code></td><td>The promotion pipeline for FOIA / scout discoveries.</td></tr>
+  </table>
+  <h3>Agent operations</h3>
+  <table>
+    <tr><td><code>scout_cache</code></td><td>Raw fetched HTML, hashed — powers the free "did it change?" check.</td></tr>
+    <tr><td><code>entity_changelog</code></td><td>Every agent write (old→new, model, confidence) — the audit trail.</td></tr>
+    <tr><td><code>entity_freshness</code></td><td>When each entity was last enriched; failure tracking.</td></tr>
+    <tr><td><code>photo_uploads</code></td><td>The capture-app queue (raw photo path, GPS, status).</td></tr>
+  </table>
+  <p>The browser never queries these tables directly. It reads two <strong>views</strong>:
+  <code>entities_summary</code> (the grid) and <code>entity_full</code> (everything for one card — joins in
+  services, events, hours, contacts, social, categories, address, brand, hero).</p>
+
+  <h2 id="pipeline">The agent pipeline</h2>
+  <p>For each entity, three steps run — all throttled, resumable, and cost-capped:</p>
+  <div class="flow">
+    <div class="b">① Scout<small>fetch site, extract signals</small></div><div class="ar">→</div>
+    <div class="b">② Enrich<small>Claude Sonnet → structured</small></div><div class="ar">→</div>
+    <div class="b">③ Apply<small>write + audit</small></div>
+  </div>
+  <ul>
+    <li><strong>Scout</strong> (<code>agents/scout.py</code>) fetches the homepage (and an events page if it finds
+      one), extracts contacts/social via regex, and mines brand signals — theme-color, fonts, CSS color variables,
+      and color frequency from the page and its stylesheet. Raw HTML is cached for change detection.</li>
+    <li><strong>Enrich</strong> (<code>agents/enrich.py</code>) sends the scraped text to <code>claude-sonnet-4-6</code>
+      via strict tool use, getting back validated JSON: a summary, services, hours, dated events, and a synthesized
+      brand palette + fonts. It only keeps facts the page actually supports — it won't invent hours or events.</li>
+    <li><strong>Apply</strong> (<code>agents/db.py</code>) writes directly to the live tables (data-build phase, no
+      manual review gate) and records an <code>entity_changelog</code> row so every change is traceable and reversible.</li>
+  </ul>
+  <p>The runner <code>agents/run_all.py</code> drives this across all entities with a concurrency cap, a hard cost
+  cap, failure isolation, and resume-on-restart.</p>
+
+  <h2 id="images">Hero images</h2>
+  <p>Two ways an entity gets a hero photo, both labeled on the card:</p>
+  <table>
+    <tr><th>Kind</th><th>How</th></tr>
+    <tr><td><span class="pill done">AI Enhanced</span></td><td>The org's own site photo, run through an image model to a polished look.</td></tr>
+    <tr><td><span class="pill soon">AI Generated</span></td><td>No usable photo found → a representative editorial image is generated.</td></tr>
+    <tr><td><span class="pill done">Community Photo</span></td><td>A real on-location photo (from the capture app), styled to the consistent "house look."</td></tr>
+  </table>
+  <p>The <strong>house look</strong> is the key to consistency: every image runs through one identical
+  enhancement recipe (a locked prompt), so photos from any contributor share a single aesthetic. Generated by
+  OpenAI <code>gpt-image-2</code>; stored in Supabase Storage. Runner: <code>agents/heroes.py</code>.</p>
+
+  <h2 id="capture">The capture app</h2>
+  <p>A mobile web app (PWA) for shooting business photos on location:</p>
+  <div class="flow">
+    <div class="b">📱 capture.html<small>pick place · photo · GPS</small></div><div class="ar">→</div>
+    <div class="b">Storage + queue<small>photo_uploads</small></div><div class="ar">→</div>
+    <div class="b">process_uploads.py<small>style · geocode · publish</small></div>
+  </div>
+  <ul>
+    <li>Passcode-gated. You search/pick a business (or add a new place), take a photo or choose one from your
+      library, and it grabs GPS.</li>
+    <li>The photo uploads to Supabase Storage and a <code>photo_uploads</code> row is queued — instant, so you can
+      keep shooting.</li>
+    <li><strong>The worker</strong> (<code>agents/process_uploads.py</code>) processes the queue: styles each photo
+      to the house look, stores the hero, reverse-geocodes the GPS to a street address, and sets it as the entity's
+      hero. Run it with <code>--loop</code> to watch the queue while you shoot.</li>
+  </ul>
+  <div class="note">The worker currently runs on your Mac (where the image API key lives). A future step moves it
+  to a server / Supabase Edge Function so capture-to-published is fully hands-off.</div>
+
+  <h2 id="frontend">Frontend & security</h2>
+  <ul>
+    <li><strong>Directory</strong> (<code>index.html</code>): reads <code>entity_full</code> live via the anon key.
+      Each card is styled in that org's own brand colors and fonts, shows its hero, address, services, events,
+      hours, social, and contacts. Community photos are featured first.</li>
+    <li><strong>Security:</strong> the anon (publishable) key is RLS-gated to read-only on the public views only.
+      The secret key (server-side, never shipped) bypasses RLS for the agents. The FOIA quarantine and ops tables
+      are invisible to the browser.</li>
+    <li>Both front-ends are static — no build step, deploy by pushing to Git → Netlify.</li>
+  </ul>
+
+  <h2 id="state">Current state</h2>
+  <p>As of the latest build:</p>
+  <div class="stats">
+    <div class="stat"><b>524</b><span>entities</span></div>
+    <div class="stat"><b>445</b><span>AI-enriched (88% of sites)</span></div>
+    <div class="stat"><b>414</b><span>with brand colors</span></div>
+    <div class="stat"><b>483</b><span>events · 91 orgs</span></div>
+    <div class="stat"><b>4,922</b><span>services</span></div>
+    <div class="stat"><b>457</b><span>with addresses</span></div>
+    <div class="stat"><b>5,455</b><span>FOIA rows quarantined</span></div>
+    <div class="stat"><b>14</b><span>hero photos so far</span></div>
+  </div>
+  <p>~60 sites are genuinely unreachable (dead domains, hard bot-walls, ancient TLS) — the practical ceiling for an
+  automated first pass.</p>
+
+  <h2 id="costs">Costs</h2>
+  <table>
+    <tr><th>Item</th><th>Cost</th></tr>
+    <tr><td>Supabase Pro (org-wide)</td><td>$25/mo + ~$10/mo compute for this project</td></tr>
+    <tr><td>Full enrichment of ~445 entities (Claude)</td><td>~$5.50 one-time</td></tr>
+    <tr><td>Ongoing refresh</td><td>A few $/mo (the change-check is free; only changed pages re-enrich)</td></tr>
+    <tr><td>Hero images (OpenAI)</td><td>~$0.055 each; full ~445 ≈ $26 (deferred)</td></tr>
+  </table>
+
+  <h2 id="run">How to run it</h2>
+  <pre><code># one-time setup
+cp .env.example .env                      # fill Supabase + API keys
+python -m venv .venv && .venv/bin/pip install -r loaders/requirements.txt
+.venv/bin/python loaders/apply_migrations.py   # build the schema
+.venv/bin/python loaders/load_chamber.py       # load 521 chamber orgs
+.venv/bin/python loaders/load_foia_quarantine.py
+
+# grow the data (live)
+DRY_RUN=0 .venv/bin/python -m agents.run_all --refresh   # enrich everything
+DRY_RUN=0 .venv/bin/python -m agents.heroes              # hero images
+
+# capture app
+DRY_RUN=0 .venv/bin/python -m agents.process_uploads --loop   # process photos as they're shot</code></pre>
+
+  <h2 id="next">Next steps</h2>
+  <table>
+    <tr><th>Step</th><th>Status</th></tr>
+    <tr><td><strong>FOIA promotion</strong> — classify the 5,455 quarantined rows and promote ~175 real businesses (parks, the boardwalk, landmarks) not in chamber data.</td><td><span class="pill next">planned</span></td></tr>
+    <tr><td><strong>Contributor Auth + moderation</strong> — replace the capture passcode with Supabase Auth (magic-link per person) and a quick approve-before-publish step, so others can safely contribute photos.</td><td><span class="pill next">planned</span></td></tr>
+    <tr><td><strong>Hosted capture worker</strong> — move <code>process_uploads</code> to a Supabase Edge Function so capture-to-published needs no laptop.</td><td><span class="pill soon">soon</span></td></tr>
+    <tr><td><strong>EXIF location</strong> — read a library photo's embedded GPS for an exact address.</td><td><span class="pill soon">soon</span></td></tr>
+    <tr><td><strong>Full hero run</strong> — generate/enhance heroes for all ~445 entities (~$26).</td><td><span class="pill soon">soon</span></td></tr>
+    <tr><td><strong>Persona personalization</strong> — the original vision: tailor the directory to who's viewing (family, senior, business owner, etc.) using the structured data.</td><td><span class="pill soon">soon</span></td></tr>
+    <tr><td><strong>Reach the unreachable ~60</strong> — a headless-browser scout for JS-walled sites, or manual entry.</td><td><span class="pill soon">soon</span></td></tr>
+    <tr><td><strong>Scheduled refresh</strong> — a daily cron (GitHub Actions) running the cheap change-check so the data stays current automatically.</td><td><span class="pill soon">soon</span></td></tr>
+  </table>
+  <p style="margin-top:24px;color:var(--gray);font-size:14px">Built data-first: a Supabase-backed, agent-enriched,
+  individually-branded directory of ~445 Batavia organizations with live events and on-location photography.</p>
+</main>
+</div>
+</body>
+</html>
