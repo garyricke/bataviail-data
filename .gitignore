@@ -19,3 +19,6 @@ supabase/.temp/
 # Agent run artifacts / caches (DB is source of truth)
 agents/.cache/
 *.log
+
+# Generated/uploaded hero images (move to cloud storage for deploy)
+web/heroes/

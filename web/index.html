@@ -24,6 +24,7 @@
   .hero-badge{position:absolute;left:10px;bottom:10px;font-size:10px;font-weight:700;letter-spacing:.4px;color:#fff;padding:3px 9px;border-radius:999px}
   .hero-badge.enhanced{background:rgba(41,47,123,.88)}
   .hero-badge.generated{background:rgba(60,64,82,.82)}
+  .hero-badge.community{background:rgba(46,125,50,.9)}
   .card h2{margin:0;font-size:20px;line-height:1.2;color:var(--bname,var(--navy));font-family:var(--bfont,inherit)}
   .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px}
   .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;letter-spacing:.3px}
@@ -81,7 +82,7 @@ const ev=s=>{ // format an event datetime
 
 async function load(){
   const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,hero,verification_status,last_verified_by";
-  const url=`${SUPABASE_URL}/rest/v1/entity_full?last_verified_by=like.claude*&select=${sel}&order=name`;
+  const url=`${SUPABASE_URL}/rest/v1/entity_full?or=(last_verified_by.like.claude*,hero.not.is.null)&select=${sel}&order=name`;
   let data;
   try{
     const r=await fetch(url,{headers:{apikey:ANON_KEY,Authorization:"Bearer "+ANON_KEY}});
@@ -114,10 +115,13 @@ function render(items){
     <div class="stat"><b>${tot.ev}</b><span>upcoming events</span></div>
     <div class="stat"><b>${tot.br}</b><span>with brand</span></div>`;
 
-  items=items.slice().sort((a,b)=>(a.hero?0:1)-(b.hero?0:1)||a.name.localeCompare(b.name));  // hero cards first
+  const rank=e=>(e.hero&&e.hero.kind==='community')?0:(e.hero?1:2);  // community photos first
+  items=items.slice().sort((a,b)=>rank(a)-rank(b)||a.name.localeCompare(b.name));
   document.getElementById("grid").innerHTML=items.map(e=>{
     const b=e.brand||{};
-    const hero=e.hero&&e.hero.url?`<div class="hero"><img src="${esc(e.hero.url)}" alt="" loading="lazy"><span class="hero-badge ${e.hero.kind==='enhanced'?'enhanced':'generated'}">${e.hero.kind==='enhanced'?'✨ AI Enhanced':'✨ AI Generated'}</span></div>`:"";
+    const hk=e.hero&&e.hero.kind;
+    const hbadge=hk==='community'?'📷 Community Photo':hk==='enhanced'?'✨ AI Enhanced':'✨ AI Generated';
+    const hero=e.hero&&e.hero.url?`<div class="hero"><img src="${esc(e.hero.url)}" alt="" loading="lazy"><span class="hero-badge ${hk}">${hbadge}</span></div>`:"";
     const p=/^#[0-9a-f]{6}$/i.test(b.primary)?b.primary:"#292F7B";
     const a=/^#[0-9a-f]{6}$/i.test(b.accent)?b.accent:"#00ADEF";
     const vars=`--b:${p};--a:${a};--bname:${readable(p)};--btint:${p}14;--bline:${p}40`+
