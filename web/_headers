@@ -1,0 +1,5 @@
+# Never serve stale HTML — always revalidate so deploys take effect immediately.
+/*.html
+  Cache-Control: no-cache
+/
+  Cache-Control: no-cache
