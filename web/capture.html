@@ -50,7 +50,7 @@
            autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
     <button type="submit" class="btn" style="background:#00ADEF;color:#fff;width:100%">Enter</button>
     <div id="gate-err" style="font-size:13px;color:#ffd0d0;height:16px"></div>
-    <div style="font-size:11px;opacity:.5">build v2</div>
+    <div style="font-size:11px;opacity:.5">build v3</div>
   </form>
 </div>
 
@@ -93,12 +93,12 @@ const PASSCODE="batavia25";   // ← change this; soft gate for trusted contribu
 const H={apikey:ANON_KEY,Authorization:"Bearer "+ANON_KEY};
 
 // ---- gate ----
-function unlock(){document.getElementById("gate").classList.add("hide");document.getElementById("app").classList.remove("hide");init();}
+function unlock(){document.getElementById("gate").style.display="none";document.getElementById("app").classList.remove("hide");init();}
 if(sessionStorage.getItem("cap_ok")==="1") unlock();
 document.getElementById("gate-form").addEventListener("submit",e=>{
   e.preventDefault();
   const v=document.getElementById("gate-pw").value.trim().toLowerCase();
-  if(v===PASSCODE.toLowerCase()){sessionStorage.setItem("cap_ok","1");unlock();}
+  if(v===PASSCODE.toLowerCase()){try{sessionStorage.setItem("cap_ok","1");}catch(_){}unlock();}
   else{document.getElementById("gate-err").textContent="Incorrect passcode — try again";}
 });
 
