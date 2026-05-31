@@ -1,0 +1,7 @@
+# Serve the static frontend (directory page + capture PWA) from web/.
+# All data/images load at runtime from Supabase (anon key) — no build step.
+[build]
+  publish = "web"
+  command = ""
+
+# PWA + manifest are plain static files; no redirects needed.
