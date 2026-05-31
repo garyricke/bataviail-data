@@ -40,9 +40,14 @@ _SYSTEM = (
     "provided, its events page), extract ONLY facts explicitly present in the "
     "text. Never invent or infer hours, services, events, or details that are not "
     "clearly stated. If the page does not state opening hours, set "
-    "found_hours=false and return an empty hours array. Keep the summary factual "
-    "and under 40 words. Use 24-hour HH:MM times; day_of_week is 0=Sunday .. "
-    "6=Saturday.\n\n"
+    "found_hours=false and return an empty hours array. Use 24-hour HH:MM times; "
+    "day_of_week is 0=Sunday .. 6=Saturday.\n\n"
+    "SUMMARY VOICE: write the summary in Batavia's community voice — factual and "
+    "specific to this organization (only what the page supports; never invent), in a "
+    "warm, grounded, neighborly tone that quietly places it within the shared life of "
+    "Batavia, IL, like a proud local introducing a neighbor. 1-2 sentences, ~30-40 "
+    "words, varied phrasing, no clichés ('nestled', 'hidden gem', 'one-stop shop'). "
+    "Let the sense of community come through the voice, not a forced 'Fox River' mention.\n\n"
     "EVENTS: extract specific, dated happenings (a show, a fundraiser, an open "
     "house, a class-series start date, a sale). Resolve relative dates ('this "
     "Saturday') and assign the correct year using the CURRENT DATE provided. Use "
@@ -63,7 +68,7 @@ _TOOL = {
     "input_schema": {
         "type": "object",
         "properties": {
-            "summary": {"type": "string", "description": "Factual 1-2 sentence summary of what the org does. Empty string if unclear."},
+            "summary": {"type": "string", "description": "1-2 sentence summary in Batavia's warm community voice (see SUMMARY VOICE in the system prompt). Factual, never invented. Empty string if unclear."},
             "services": {"type": "array", "items": {"type": "string"}, "description": "Distinct services, products, or programs explicitly offered. Empty if none stated."},
             "found_hours": {"type": "boolean", "description": "True ONLY if explicit opening hours appear on the page."},
             "hours": {

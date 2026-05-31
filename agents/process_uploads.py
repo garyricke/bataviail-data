@@ -122,10 +122,24 @@ def enhance(client, raw: bytes) -> bytes:
 
 
 # ── one queue row ─────────────────────────────────────────────────────────────
+def _describe_new(name, geo):
+    """Write a community-voiced description for a newly-added place (no website)."""
+    try:
+        import anthropic
+        from agents.voice import revoice
+        loc = geo.get("address") if geo else None
+        facts = ("A place in Batavia, Illinois" + (f", located near {loc}" if loc else "") +
+                 ". No further details are confirmed beyond its name and that it is part of the Batavia community.")
+        return revoice(anthropic.Anthropic(), name, [], facts, [])
+    except Exception:
+        return None
+
+
 def process_row(client, row):
     upload_id, entity_id, entity_name, path, lat, lng = row
+    new_entity = entity_id is None
     with connect() as conn, conn.cursor() as cur:
-        if not entity_id:
+        if new_entity:
             cur.execute(
                 """insert into entities (name, is_batavia_local, source, verification_status, last_verified_by)
                    values (%s, true, 'manual', 'verified', 'manual') returning id""",
@@ -157,7 +171,13 @@ def process_row(client, row):
         else:
             cur.execute("update entities set verification_status='verified', updated_at=now() where id=%s", (entity_id,))
 
-        set_location(cur, entity_id, reverse_geocode(lat, lng))
+        geo = reverse_geocode(lat, lng)
+        set_location(cur, entity_id, geo)
+        if new_entity:
+            desc = _describe_new(entity_name or "Untitled place", geo)
+            if desc:
+                cur.execute("update entities set summary=%s where id=%s and coalesce(trim(summary),'')=''",
+                            (desc, entity_id))
         cur.execute("update photo_uploads set status='done', processed_at=now() where id=%s", (upload_id,))
         conn.commit()
     return entity_id
