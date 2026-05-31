@@ -25,6 +25,9 @@
   .hero-badge.enhanced{background:rgba(41,47,123,.88)}
   .hero-badge.generated{background:rgba(60,64,82,.82)}
   .hero-badge.community{background:rgba(46,125,50,.9)}
+  .thumbs{display:flex;gap:6px;margin:-6px 0 2px;flex-wrap:wrap}
+  .thumb{width:46px;height:34px;border-radius:6px;object-fit:cover;cursor:pointer;border:2px solid transparent;display:block}
+  .thumb.active,.thumb:hover{border-color:var(--b,var(--navy))}
   .card h2{margin:0;font-size:20px;line-height:1.2;color:var(--bname,var(--navy));font-family:var(--bfont,inherit)}
   .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px}
   .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;letter-spacing:.3px}
@@ -84,7 +87,7 @@ const ev=s=>{ // format an event datetime
 };
 
 async function load(){
-  const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,hero,location,verification_status,last_verified_by";
+  const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,hero,media,location,verification_status,last_verified_by";
   const url=`${SUPABASE_URL}/rest/v1/entity_full?or=(last_verified_by.like.claude*,hero.not.is.null)&select=${sel}&order=name`;
   let data;
   try{
@@ -124,7 +127,8 @@ function render(items){
     const b=e.brand||{};
     const hk=e.hero&&e.hero.kind;
     const hbadge=hk==='community'?'📷 Community Photo':hk==='enhanced'?'✨ AI Enhanced':'✨ AI Generated';
-    const hero=e.hero&&e.hero.url?`<div class="hero"><img src="${esc(e.hero.url)}" alt="" loading="lazy"><span class="hero-badge ${hk}">${hbadge}</span></div>`:"";
+    const gallery=(e.media&&e.media.length>1)?`<div class="thumbs">${e.media.map((m,i)=>`<img class="thumb${i===0?' active':''}" src="${esc(m.url)}" data-url="${esc(m.url)}" loading="lazy" alt="">`).join("")}</div>`:"";
+    const hero=e.hero&&e.hero.url?`<div class="hero"><img class="hero-img" src="${esc(e.hero.url)}" alt="" loading="lazy"><span class="hero-badge ${hk}">${hbadge}</span></div>${gallery}`:"";
     const p=/^#[0-9a-f]{6}$/i.test(b.primary)?b.primary:"#292F7B";
     const a=/^#[0-9a-f]{6}$/i.test(b.accent)?b.accent:"#00ADEF";
     const vars=`--b:${p};--a:${a};--bname:${readable(p)};--btint:${p}14;--bline:${p}40`+
@@ -164,6 +168,12 @@ function render(items){
     </article>`;
   }).join("");
 }
+// click a thumbnail → swap the card's main hero image
+document.getElementById("grid").addEventListener("click",ev=>{
+  const t=ev.target.closest(".thumb"); if(!t)return;
+  const card=t.closest(".card"), main=card&&card.querySelector(".hero-img");
+  if(main){main.src=t.dataset.url; card.querySelectorAll(".thumb").forEach(x=>x.classList.remove("active")); t.classList.add("active");}
+});
 load();
 </script>
 </body>

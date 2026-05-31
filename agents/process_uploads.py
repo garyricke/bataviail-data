@@ -134,13 +134,30 @@ def process_row(client, row):
             entity_id = cur.fetchone()[0]
 
         hero_bytes = enhance(client, storage_download(path))
-        public_url = storage_upload(f"heroes/{entity_id}.jpg", hero_bytes)
+        # unique path per upload so multiple photos per entity don't overwrite
+        public_url = storage_upload(f"heroes/{entity_id}/{upload_id}.jpg", hero_bytes)
+
+        # append to the entity's gallery
+        cur.execute("select coalesce(max(sort_order), -1) + 1 from entity_media where entity_id=%s", (entity_id,))
+        order = cur.fetchone()[0]
+        cur.execute(
+            """insert into entity_media (entity_id, url, kind, source, sort_order)
+               values (%s,%s,'community','on-location photo',%s)
+               on conflict (entity_id, url) do nothing""",
+            (entity_id, public_url, order),
+        )
+        # promote to the card's primary hero unless a community photo is already primary
+        cur.execute("select hero->>'kind' from entities where id=%s", (entity_id,))
+        r = cur.fetchone()
+        if (r[0] if r else None) != "community":
+            cur.execute(
+                "update entities set hero=%s, verification_status='verified', updated_at=now() where id=%s",
+                (Json({"url": public_url, "kind": "community", "source": "on-location photo"}), entity_id),
+            )
+        else:
+            cur.execute("update entities set verification_status='verified', updated_at=now() where id=%s", (entity_id,))
 
         set_location(cur, entity_id, reverse_geocode(lat, lng))
-        cur.execute(
-            "update entities set hero=%s, verification_status='verified', updated_at=now() where id=%s",
-            (Json({"url": public_url, "kind": "community", "source": "on-location photo"}), entity_id),
-        )
         cur.execute("update photo_uploads set status='done', processed_at=now() where id=%s", (upload_id,))
         conn.commit()
     return entity_id
