@@ -32,6 +32,8 @@
   .b-ver{background:#eef7ee;color:#2f7d34}
   .web{font-size:13px;text-decoration:none;color:var(--bname,var(--navy))}.web:hover{text-decoration:underline}
   .summary{margin:13px 0 0;color:#3a3f52}
+  .addr{margin-top:9px;font-size:13px;color:var(--gray)}
+  .addr a{color:var(--bname,var(--navy));text-decoration:none}.addr a:hover{text-decoration:underline}
   .sec{margin-top:15px}
   .sec h3{margin:0 0 7px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--gray)}
   .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -81,7 +83,7 @@ const ev=s=>{ // format an event datetime
 };
 
 async function load(){
-  const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,hero,verification_status,last_verified_by";
+  const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,hero,location,verification_status,last_verified_by";
   const url=`${SUPABASE_URL}/rest/v1/entity_full?or=(last_verified_by.like.claude*,hero.not.is.null)&select=${sel}&order=name`;
   let data;
   try{
@@ -146,6 +148,7 @@ function render(items){
         <span class="badge b-ver">✓ enriched</span>
         ${e.website?`<a class="web" href="${esc(e.website.trim())}" target="_blank" rel="noopener">${esc(e.website.trim().replace(/^https?:\/\//,"").replace(/\/$/,""))}</a>`:""}
       </div>
+      ${e.location&&e.location.address?`<div class="addr">📍 <a href="https://maps.google.com/?q=${encodeURIComponent([e.location.address,e.location.city,e.location.state,e.location.zip].filter(Boolean).join(', '))}" target="_blank" rel="noopener">${esc([e.location.address,e.location.city,e.location.state].filter(Boolean).join(', '))} ${esc(e.location.zip||'')}</a></div>`:""}
       ${e.summary?`<p class="summary">${esc(e.summary)}</p>`:""}
       ${events?`<div class="sec"><h3>Upcoming Events</h3>${events}</div>`:""}
       ${svcs?`<div class="sec"><h3>Services</h3><div class="chips">${svcs}</div></div>`:""}

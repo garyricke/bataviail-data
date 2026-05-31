@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#292F7B">
+<link rel="manifest" href="manifest.json">
+<title>Batavia — Photo Capture</title>
+<style>
+  :root{--navy:#292F7B;--sky:#00ADEF;--green:#2e7d32;--gray:#7E7F81;--ink:#1c2030;--line:#e3e6ef;--bg:#f6f7fb}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  header{background:linear-gradient(120deg,var(--navy),#3a429e);color:#fff;padding:18px 18px calc(18px + env(safe-area-inset-top));padding-top:max(18px,env(safe-area-inset-top))}
+  header h1{margin:0;font-size:18px}header p{margin:2px 0 0;font-size:12px;opacity:.85}
+  main{max-width:560px;margin:0 auto;padding:16px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  label{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);font-weight:600}
+  input[type=text],input[type=search]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px;margin-top:6px}
+  .results{margin-top:8px;max-height:230px;overflow:auto;border:1px solid var(--line);border-radius:10px;display:none}
+  .results.show{display:block}
+  .results div{padding:11px 12px;border-bottom:1px solid #f0f2f7;cursor:pointer}
+  .results div:hover{background:#f4f6fb}
+  .picked{display:flex;align-items:center;gap:10px;background:#eef0fa;border:1px solid #dfe3f5;border-radius:10px;padding:11px 12px;margin-top:8px}
+  .picked b{color:var(--navy)}
+  .picked button{margin-left:auto;background:none;border:0;color:var(--gray);font-size:13px;cursor:pointer;text-decoration:underline}
+  .shot{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;background:#eef0f5;aspect-ratio:4/3;display:none}
+  .shot.show{display:block}.shot img{width:100%;height:100%;object-fit:cover;display:block}
+  .btn{display:block;width:100%;padding:15px;border:0;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
+  .btn-cam{background:#eef0fa;color:var(--navy);border:1.5px dashed var(--navy)}
+  .btn-go{background:var(--green);color:#fff;margin-top:6px}
+  .btn-go:disabled{background:#b7c0cc;cursor:not-allowed}
+  .gps{font-size:12px;color:var(--gray);margin-top:10px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1c2030;color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;pointer-events:none}
+  .toast.show{opacity:1}
+  .queue h3{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin:0 0 8px}
+  .qitem{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f2f7;font-size:14px}
+  .qitem img{width:46px;height:46px;border-radius:8px;object-fit:cover}
+  .qitem .st{margin-left:auto;font-size:11px;font-weight:700;color:var(--green)}
+  #gate{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;padding:24px;z-index:10}
+  #gate input{max-width:280px;text-align:center}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div id="gate">
+  <h2 style="margin:0">📷 Batavia Photo Capture</h2>
+  <p style="opacity:.8;margin:0">Enter the contributor passcode</p>
+  <input id="gate-pw" type="text" inputmode="numeric" placeholder="passcode" autocomplete="off">
+  <div id="gate-err" style="font-size:13px;color:#ffd0d0;height:16px"></div>
+</div>
+
+<div id="app" class="hide">
+  <header><h1>📷 Batavia Photo Capture</h1><p>Shoot a place → it's styled to the house look automatically</p></header>
+  <main>
+    <div class="card">
+      <label>Place</label>
+      <input id="search" type="search" placeholder="Search businesses…" autocomplete="off">
+      <div class="results" id="results"></div>
+      <div id="picked" style="display:none"></div>
+      <div id="newrow" style="display:none;margin-top:8px">
+        <input id="newname" type="text" placeholder="New place name (e.g. Riverwalk Bandshell)">
+      </div>
+      <div style="margin-top:8px;font-size:13px"><a href="#" id="toggle-new" style="color:var(--sky)">+ Add a place that isn't listed</a></div>
+    </div>
+
+    <div class="card">
+      <label>Photo</label>
+      <input id="file" type="file" accept="image/*" capture="environment" class="hide">
+      <button class="btn btn-cam" id="cam" style="margin-top:8px">📸 Take / choose a photo</button>
+      <div class="shot" id="shot"><img id="preview" alt=""></div>
+      <div class="gps" id="gps">📍 location: not captured yet</div>
+    </div>
+
+    <button class="btn btn-go" id="go" disabled>Add photo to the queue</button>
+
+    <div class="card queue" id="queuecard" style="display:none;margin-top:14px">
+      <h3>This session</h3>
+      <div id="queue"></div>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL="https://kgbudsefckrlumxikmtp.supabase.co";
+const ANON_KEY="sb_publishable_2qxHXOJVdUh4CywqU5u5uQ_4YheJJW6";
+const PASSCODE="batavia25";   // ← change this; soft gate for trusted contributors
+const H={apikey:ANON_KEY,Authorization:"Bearer "+ANON_KEY};
+
+// ---- gate ----
+function unlock(){document.getElementById("gate").classList.add("hide");document.getElementById("app").classList.remove("hide");init();}
+if(sessionStorage.getItem("cap_ok")==="1") unlock();
+document.getElementById("gate-pw").addEventListener("input",e=>{
+  if(e.target.value.trim()===PASSCODE){sessionStorage.setItem("cap_ok","1");unlock();}
+});
+
+// ---- state ----
+let entities=[], picked=null, file=null, gps=null, newMode=false;
+const $=id=>document.getElementById(id);
+const esc=s=>(s??"").toString().replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2200);}
+function refreshGo(){$("go").disabled=!(file&&(picked||(newMode&&$("newname").value.trim())));}
+
+async function init(){
+  try{
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/entities?select=id,name&order=name`,{headers:H});
+    entities=await r.json();
+  }catch(e){toast("Couldn't load places");}
+}
+
+// ---- place search ----
+$("search").addEventListener("input",e=>{
+  const q=e.target.value.toLowerCase().trim();
+  const box=$("results");
+  if(!q){box.classList.remove("show");box.innerHTML="";return;}
+  const hits=entities.filter(x=>x.name.toLowerCase().includes(q)).slice(0,30);
+  box.innerHTML=hits.map(x=>`<div data-id="${x.id}">${esc(x.name)}</div>`).join("")||`<div style="color:#999">no match — use “Add a place” below</div>`;
+  box.classList.add("show");
+});
+$("results").addEventListener("click",e=>{
+  const d=e.target.closest("[data-id]"); if(!d)return;
+  picked={id:d.dataset.id,name:d.textContent}; newMode=false;
+  $("results").classList.remove("show"); $("search").value=""; $("newrow").style.display="none";
+  $("picked").style.display="block";
+  $("picked").innerHTML=`<div class="picked"><b>${esc(picked.name)}</b><button id="clr">change</button></div>`;
+  $("clr").onclick=()=>{picked=null;$("picked").style.display="none";refreshGo();};
+  refreshGo();
+});
+$("toggle-new").addEventListener("click",e=>{e.preventDefault();newMode=true;picked=null;
+  $("picked").style.display="none";$("newrow").style.display="block";$("newname").focus();});
+document.addEventListener("input",e=>{if(e.target.id==="newname")refreshGo();});
+
+// ---- photo + gps ----
+$("cam").addEventListener("click",()=>$("file").click());
+$("file").addEventListener("change",e=>{
+  file=e.target.files[0]; if(!file)return;
+  $("preview").src=URL.createObjectURL(file); $("shot").classList.add("show");
+  $("cam").textContent="📸 Retake / choose another";
+  refreshGo();
+  if(navigator.geolocation){
+    $("gps").textContent="📍 getting location…";
+    navigator.geolocation.getCurrentPosition(
+      p=>{gps={lat:p.coords.latitude,lng:p.coords.longitude};$("gps").textContent=`📍 ${gps.lat.toFixed(5)}, ${gps.lng.toFixed(5)}`;},
+      ()=>{$("gps").textContent="📍 location unavailable (needs HTTPS) — address can be added later";},
+      {timeout:8000,enableHighAccuracy:true});
+  }
+});
+
+// ---- submit ----
+$("go").addEventListener("click",async()=>{
+  $("go").disabled=true; $("go").textContent="Uploading…";
+  try{
+    const ext=(file.type.split("/")[1]||"jpg").replace("jpeg","jpg");
+    const path=`captures/${crypto.randomUUID()}.${ext}`;
+    const up=await fetch(`${SUPABASE_URL}/storage/v1/object/media/${path}`,
+      {method:"POST",headers:{...H,"Content-Type":file.type,"x-upsert":"true"},body:file});
+    if(!up.ok) throw new Error("upload "+up.status);
+    const row={storage_path:path,gps_lat:gps?.lat??null,gps_lng:gps?.lng??null};
+    if(picked) row.entity_id=picked.id; else row.entity_name=$("newname").value.trim();
+    const q=await fetch(`${SUPABASE_URL}/rest/v1/photo_uploads`,
+      {method:"POST",headers:{...H,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(row)});
+    if(!q.ok) throw new Error("queue "+q.status);
+
+    addToQueue(picked?picked.name:$("newname").value.trim(), $("preview").src);
+    toast("✓ Queued!");
+    // reset for next shot, keep the place if it was selected
+    file=null; gps=null; $("shot").classList.remove("show"); $("cam").textContent="📸 Take / choose a photo";
+    $("gps").textContent="📍 location: not captured yet"; $("file").value="";
+  }catch(err){toast("Error: "+err.message);}
+  $("go").textContent="Add photo to the queue"; refreshGo();
+});
+
+function addToQueue(name,thumb){
+  $("queuecard").style.display="block";
+  const d=document.createElement("div"); d.className="qitem";
+  d.innerHTML=`<img src="${thumb}"><span>${esc(name)}</span><span class="st">queued</span>`;
+  $("queue").prepend(d);
+}
+</script>
+</body>
+</html>
