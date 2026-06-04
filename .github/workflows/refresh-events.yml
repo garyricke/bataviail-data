@@ -1,0 +1,36 @@
+name: Refresh events
+
+# Daily crawl that keeps the directory's upcoming events fresh. Re-scouts each
+# site (change-detected, no paid search) and only spends a cheap LLM call when
+# the events/calendar page actually changed. Past events expire on their own via
+# the entity_full view (starts_at >= now()).
+on:
+  schedule:
+    - cron: "0 9 * * *"   # daily ~03:00–04:00 America/Chicago
+  workflow_dispatch: {}    # manual "Run workflow" button
+
+concurrency:
+  group: refresh-events
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r agents/requirements.txt
+
+      - name: Refresh events
+        env:
+          DRY_RUN: "0"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m agents.refresh_events --concurrency 6 --cost-cap 5

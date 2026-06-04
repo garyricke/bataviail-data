@@ -196,3 +196,55 @@ def apply_update(update) -> str:
         conn.commit()
 
     return "applied: " + (", ".join(changes) if changes else "no-op")
+
+
+def apply_events(entity_id, events, model) -> int:
+    """Write ONLY events (idempotent upsert), for the daily events refresher.
+
+    Deliberately NOT apply_update: this touches last_checked_at but never
+    last_deep_enriched_at or verification_status, so an events refresh can't
+    masquerade as a deep enrichment and pull an entity out of the deep backlog.
+    Returns the number of events written. No-op in DRY_RUN.
+    """
+    from psycopg.types.json import Json
+
+    if DRY_RUN:
+        return 0
+    events = _denul({"events": events or []})["events"]
+    n = 0
+    with connect() as conn, conn.cursor() as cur:
+        for ev in events:
+            title = (ev.get("title") or "").strip()
+            if not title:
+                continue
+            date = _valid_date(ev.get("date"))
+            time = _valid_time(ev.get("time"))
+            starts_at = f"{date}T{time or '00:00'}:00" if date else None
+            dedup = re.sub(r"\s+", " ", title.lower()).strip() + "|" + (date or "")
+            cur.execute(
+                """insert into entity_events
+                     (entity_id, title, description, starts_at, all_day, location, url, price, source, dedup_key)
+                   values (%s,%s,%s,%s,%s,%s,%s,%s,'entity_site',%s)
+                   on conflict (entity_id, dedup_key) do update set
+                     title=excluded.title, description=excluded.description,
+                     starts_at=excluded.starts_at, all_day=excluded.all_day,
+                     location=excluded.location, url=excluded.url, price=excluded.price,
+                     found_at=now()""",
+                (entity_id, title, ev.get("description") or None, starts_at, not bool(time),
+                 ev.get("location") or None, ev.get("url") or None, ev.get("price") or None, dedup),
+            )
+            n += 1
+        if n:
+            cur.execute(
+                """insert into entity_changelog (entity_id, source, model, confidence, changes)
+                   values (%s,'events_refresh',%s,0.0,%s)""",
+                (entity_id, model, Json({"events": {"new_count": n}})),
+            )
+        cur.execute(
+            """insert into entity_freshness (entity_id, last_checked_at)
+               values (%s, now())
+               on conflict (entity_id) do update set last_checked_at=now()""",
+            (entity_id,),
+        )
+        conn.commit()
+    return n

@@ -38,7 +38,8 @@ TITLE_RE = re.compile(r'<title[^>]*>(.*?)</title>', re.I | re.S)
 @dataclass
 class ScoutBundle:
     entity_id: str
-    changed: bool                        # cheap freshness check result
+    changed: bool                        # cheap freshness check result (homepage)
+    events_changed: bool = False         # did the dedicated events/calendar page change?
     source: str = "dry-run"
     final_url: str = ""
     status: int = 0
@@ -299,7 +300,7 @@ def _cache_put(url, status, etag, content_hash, body):
         c.commit()
 
 
-async def _scout_live(entity) -> ScoutBundle:
+async def _scout_live(entity, *, search: bool = True) -> ScoutBundle:
     url = entity["website"]
     if not url:
         return ScoutBundle(entity_id=entity["id"], changed=False, source="live",
@@ -316,7 +317,7 @@ async def _scout_live(entity) -> ScoutBundle:
     text = _html_to_text(body)
     title_m = TITLE_RE.search(body)
     socials = {p: u for p, u in _extract_socials(body).items() if p not in entity["socials"]}
-    snippets = await asyncio.to_thread(_brave_search, f'{entity["name"]} Batavia IL hours')
+    snippets = await asyncio.to_thread(_brave_search, f'{entity["name"]} Batavia IL hours') if search else []
 
     # Brand signals: homepage HTML + first linked stylesheet (best-effort).
     brand = _brand_signals(body, is_html=True)
@@ -340,19 +341,20 @@ async def _scout_live(entity) -> ScoutBundle:
     }
 
     # Look for an events/calendar page and fetch it (best-effort, cached).
-    events_url, events_text = "", ""
+    events_url, events_text, events_changed = "", "", False
     found = _find_events_url(body, final_url)
     if found and found.rstrip("/") != final_url.rstrip("/"):
         try:
             ev_final, ev_status, ev_body, ev_etag = await asyncio.to_thread(_fetch, found)
-            _cache_put(ev_final, ev_status, ev_etag,
-                       hashlib.sha256(ev_body.encode("utf-8", "replace")).hexdigest(), ev_body)
+            ev_hash = hashlib.sha256(ev_body.encode("utf-8", "replace")).hexdigest()
+            events_changed = _cache_get(ev_final) != ev_hash   # compare BEFORE overwriting
+            _cache_put(ev_final, ev_status, ev_etag, ev_hash, ev_body)
             events_url, events_text = ev_final, _html_to_text(ev_body)[:5000]
         except Exception:
             pass  # events page is optional; never fail the scout over it
 
     return ScoutBundle(
-        entity_id=entity["id"], changed=changed, source="live",
+        entity_id=entity["id"], changed=changed, events_changed=events_changed, source="live",
         final_url=final_url, status=status,
         title=(title_m.group(1).strip() if title_m else ""),
         homepage_text=text[:4000],
@@ -364,9 +366,13 @@ async def _scout_live(entity) -> ScoutBundle:
     )
 
 
-async def scout(entity) -> ScoutBundle:
-    """Cheap freshness check first; only deep-scout on detected change."""
+async def scout(entity, *, search: bool = True) -> ScoutBundle:
+    """Cheap freshness check first; only deep-scout on detected change.
+
+    search=False skips the (metered) Brave lookup — used by the events
+    refresher, which only needs page content + change detection.
+    """
     if DRY_RUN:
         await asyncio.sleep(0)
         return _synthesize(entity)
-    return await _scout_live(entity)
+    return await _scout_live(entity, search=search)
