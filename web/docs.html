@@ -156,6 +156,20 @@
   <p>The runner <code>agents/run_all.py</code> drives this across all entities with a concurrency cap, a hard cost
   cap, failure isolation, and resume-on-restart.</p>
 
+  <h3>Daily events refresher</h3>
+  <p>Events expire, so a dedicated agent (<code>agents/refresh_events.py</code>) keeps them current — it runs
+  automatically every day on <strong>GitHub Actions</strong>
+  (<code>.github/workflows/refresh-events.yml</code>, no laptop needed). To stay cheap it leans entirely on change
+  detection:</p>
+  <ul>
+    <li>It re-scouts every site (HTTP + content-hash compare, and <em>no</em> paid search) — that part is free.</li>
+    <li>It spends a cheap <code>claude-haiku-4-5</code> call <strong>only</strong> when a site's events/calendar page
+      actually changed, then writes <em>only</em> the events (an idempotent upsert) — never touching summaries, brand,
+      or deep-enrichment state. Typical cost is a few cents a day.</li>
+    <li>Past events need no cleanup: the <code>entity_full</code> view only returns <code>starts_at &gt;= now()</code>,
+      so finished events drop off the site on their own.</li>
+  </ul>
+
   <h2 id="images">Hero images</h2>
   <p>Two ways an entity gets a hero photo, both labeled on the card:</p>
   <table>
@@ -246,7 +260,11 @@ DRY_RUN=0 .venv/bin/python -m agents.heroes              # hero images
 # Trigger a run now (instead of waiting for the cron):
 gh workflow run "Process photo-capture queue" --ref main
 # …or process locally as a backup:
-DRY_RUN=0 .venv/bin/python -m agents.process_uploads --loop   # process photos as they're shot</code></pre>
+DRY_RUN=0 .venv/bin/python -m agents.process_uploads --loop   # process photos as they're shot
+
+# events freshness — runs itself daily on GitHub Actions.
+gh workflow run "Refresh events" --ref main                   # trigger a crawl now
+DRY_RUN=0 .venv/bin/python -m agents.refresh_events           # …or run it locally</code></pre>
 
   <h2 id="next">Next steps</h2>
   <table>
@@ -258,7 +276,8 @@ DRY_RUN=0 .venv/bin/python -m agents.process_uploads --loop   # process photos a
     <tr><td><strong>Full hero run</strong> — generate/enhance heroes for all ~445 entities (~$26).</td><td><span class="pill soon">soon</span></td></tr>
     <tr><td><strong>Persona personalization</strong> — the original vision: tailor the directory to who's viewing (family, senior, business owner, etc.) using the structured data.</td><td><span class="pill soon">soon</span></td></tr>
     <tr><td><strong>Reach the unreachable ~60</strong> — a headless-browser scout for JS-walled sites, or manual entry.</td><td><span class="pill soon">soon</span></td></tr>
-    <tr><td><strong>Scheduled refresh</strong> — a daily cron (GitHub Actions) running the cheap change-check so the data stays current automatically.</td><td><span class="pill soon">soon</span></td></tr>
+    <tr><td><strong>Daily events refresh</strong> — <code>refresh_events</code> runs on a GitHub Actions cron every day, re-extracting events from changed pages with the cheap model so upcoming events stay current automatically.</td><td><span class="pill done">done</span></td></tr>
+    <tr><td><strong>Scheduled full refresh</strong> — extend the daily cron to the cheap change-check across <em>all</em> fields (not just events), re-deep-enriching only pages that changed.</td><td><span class="pill soon">soon</span></td></tr>
   </table>
   <p style="margin-top:24px;color:var(--gray);font-size:14px">Built data-first: a Supabase-backed, agent-enriched,
   individually-branded directory of ~445 Batavia organizations with live events and on-location photography.</p>
