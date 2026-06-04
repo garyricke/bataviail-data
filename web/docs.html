@@ -182,10 +182,18 @@
       keep shooting.</li>
     <li><strong>The worker</strong> (<code>agents/process_uploads.py</code>) processes the queue: styles each photo
       to the house look, stores the hero, reverse-geocodes the GPS to a street address, and sets it as the entity's
-      hero. Run it with <code>--loop</code> to watch the queue while you shoot.</li>
+      hero.</li>
+    <li>The worker runs automatically on <strong>GitHub Actions</strong> (workflow
+      <code>.github/workflows/process-uploads.yml</code>) on a <strong>5-minute schedule</strong> — no laptop needed.
+      So a shot is typically styled and live within a few minutes of upload.</li>
   </ul>
-  <div class="note">The worker currently runs on your Mac (where the image API key lives). A future step moves it
-  to a server / Supabase Edge Function so capture-to-published is fully hands-off.</div>
+  <div class="note"><strong>Trigger it manually</strong> (instead of waiting for the 5-minute cron):
+    <ul style="margin:6px 0 0">
+      <li><strong>GitHub UI:</strong> repo → <em>Actions → Process photo-capture queue → Run workflow</em>.</li>
+      <li><strong>Command line:</strong> <code>gh workflow run "Process photo-capture queue" --ref main</code></li>
+    </ul>
+    Either runs the same job that processes any pending uploads. You can still run it locally as a backup with
+    <code>.venv/bin/python -m agents.process_uploads --loop</code>.</div>
 
   <h2 id="frontend">Frontend & security</h2>
   <ul>
@@ -234,7 +242,10 @@ python -m venv .venv && .venv/bin/pip install -r loaders/requirements.txt
 DRY_RUN=0 .venv/bin/python -m agents.run_all --refresh   # enrich everything
 DRY_RUN=0 .venv/bin/python -m agents.heroes              # hero images
 
-# capture app
+# capture app — normally runs itself on GitHub Actions every 5 min.
+# Trigger a run now (instead of waiting for the cron):
+gh workflow run "Process photo-capture queue" --ref main
+# …or process locally as a backup:
 DRY_RUN=0 .venv/bin/python -m agents.process_uploads --loop   # process photos as they're shot</code></pre>
 
   <h2 id="next">Next steps</h2>
@@ -242,7 +253,7 @@ DRY_RUN=0 .venv/bin/python -m agents.process_uploads --loop   # process photos a
     <tr><th>Step</th><th>Status</th></tr>
     <tr><td><strong>FOIA promotion</strong> — classify the 5,455 quarantined rows and promote ~175 real businesses (parks, the boardwalk, landmarks) not in chamber data.</td><td><span class="pill next">planned</span></td></tr>
     <tr><td><strong>Contributor Auth + moderation</strong> — replace the capture passcode with Supabase Auth (magic-link per person) and a quick approve-before-publish step, so others can safely contribute photos.</td><td><span class="pill next">planned</span></td></tr>
-    <tr><td><strong>Hosted capture worker</strong> — move <code>process_uploads</code> to a Supabase Edge Function so capture-to-published needs no laptop.</td><td><span class="pill soon">soon</span></td></tr>
+    <tr><td><strong>Hosted capture worker</strong> — <code>process_uploads</code> now runs on a GitHub Actions cron (every 5 min) so capture-to-published needs no laptop.</td><td><span class="pill done">done</span></td></tr>
     <tr><td><strong>EXIF location</strong> — read a library photo's embedded GPS for an exact address.</td><td><span class="pill soon">soon</span></td></tr>
     <tr><td><strong>Full hero run</strong> — generate/enhance heroes for all ~445 entities (~$26).</td><td><span class="pill soon">soon</span></td></tr>
     <tr><td><strong>Persona personalization</strong> — the original vision: tailor the directory to who's viewing (family, senior, business owner, etc.) using the structured data.</td><td><span class="pill soon">soon</span></td></tr>
