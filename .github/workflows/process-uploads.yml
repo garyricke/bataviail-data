@@ -1,0 +1,37 @@
+name: Process photo-capture queue
+
+# Replaces running `python -m agents.process_uploads` on a laptop.
+# Every ~5 min, style any pending uploads to the house look and set them as heroes.
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 minutes (GitHub may delay under load)
+  workflow_dispatch: {}      # manual "Run workflow" button
+
+# Never let two runs process the queue at the same time.
+concurrency:
+  group: process-uploads
+  cancel-in-progress: false
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r agents/requirements.txt
+
+      - name: Process pending uploads
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m agents.process_uploads
