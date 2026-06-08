@@ -3,8 +3,10 @@ name: Process photo-capture queue
 # Replaces running `python -m agents.process_uploads` on a laptop.
 # Every ~5 min, style any pending uploads to the house look and set them as heroes.
 on:
+  repository_dispatch:
+    types: [new_upload]      # fired by a Supabase trigger the instant a photo is queued
   schedule:
-    - cron: "*/5 * * * *"   # every 5 minutes (GitHub may delay under load)
+    - cron: "0 * * * *"      # hourly safety net (GitHub throttles frequent crons heavily)
   workflow_dispatch: {}      # manual "Run workflow" button
 
 # Never let two runs process the queue at the same time.
