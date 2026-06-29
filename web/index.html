@@ -5,148 +5,256 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BataviaIL — Agent-Collected Data</title>
 <style>
-  :root{ --navy:#292F7B; --sky:#00ADEF; --gray:#7E7F81; --ink:#1c2030; --line:#e7e9f0; --bg:#f6f7fb; }
+  :root{ --navy:#292F7B; --sky:#00ADEF; --green:#60C560; --gray:#7E7F81; --ink:#1c2030; --line:#e7e9f0; --bg:#f6f7fb; --p:var(--navy); }
   *{box-sizing:border-box}
   body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
-  header{background:linear-gradient(120deg,var(--navy),#3a429e);color:#fff;padding:34px 24px}
-  .wrap{max-width:1180px;margin:0 auto;position:relative}
-  .upload-link{position:absolute;top:0;right:0;display:inline-flex;align-items:center;justify-content:center;
-    width:42px;height:42px;border-radius:10px;color:#fff;background:rgba(255,255,255,.12);
-    border:1px solid rgba(255,255,255,.25);transition:background .15s ease}
-  .upload-link:hover{background:rgba(255,255,255,.22)}
-  .upload-link svg{width:24px;height:24px;display:block}
-  header h1{margin:0 0 6px;font-size:25px}
-  header p{margin:0;opacity:.85;font-size:15px;max-width:760px}
-  .stats{display:flex;gap:26px;margin-top:18px;flex-wrap:wrap}
-  .stat b{display:block;font-size:23px}.stat span{font-size:12px;opacity:.8}
+  .wrap{max-width:1180px;margin:0 auto}
+  .hide{display:none !important}
+
+  /* ── Screen 1: persona selector ─────────────────────────────────────────── */
+  #screen-personas{min-height:100vh;background:linear-gradient(150deg,var(--navy) 0%,#20266a 45%,#161b54 100%);color:#fff;padding:0 24px 70px}
+  .pick-head{text-align:center;padding:64px 16px 36px;max-width:680px;margin:0 auto}
+  .pick-head .eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--sky);font-weight:700}
+  .pick-head h1{font-size:clamp(1.7rem,4vw,2.7rem);margin:12px 0 10px;letter-spacing:-.02em}
+  .pick-head p{margin:0;font-size:1.05rem;color:rgba(255,255,255,.75);line-height:1.6}
+  .pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;max-width:1120px;margin:0 auto}
+  .pcard{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:28px 22px;cursor:pointer;
+         text-align:left;color:#fff;font:inherit;position:relative;overflow:hidden;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
+  .pcard:hover{transform:translateY(-5px);border-color:rgba(255,255,255,.3);box-shadow:0 18px 40px rgba(0,0,0,.32)}
+  .pcard::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,var(--pc) 0%,transparent 60%);opacity:.14;transition:opacity .14s ease}
+  .pcard:hover::before{opacity:.26}
+  .pcard .ico{width:52px;height:52px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--pc) 28%,transparent);position:relative;z-index:1}
+  .pcard .ico svg{width:28px;height:28px;color:#fff}
+  .pcard h3{margin:16px 0 6px;font-size:1.2rem;position:relative;z-index:1}
+  .pcard .tag{margin:0;font-size:.86rem;color:rgba(255,255,255,.72);position:relative;z-index:1;line-height:1.5}
+  .pcard .go{margin-top:16px;font-size:.82rem;font-weight:700;color:var(--pc);display:inline-flex;align-items:center;gap:6px;position:relative;z-index:1}
+  .pick-foot{text-align:center;margin:34px auto 0}
+  .pick-foot button{background:none;border:0;color:rgba(255,255,255,.8);font:inherit;font-size:.92rem;text-decoration:underline;cursor:pointer}
+  .pick-foot a{color:rgba(255,255,255,.55);font-size:.82rem;text-decoration:none;margin-left:18px}
+
+  /* ── Screen 2: persona directory ────────────────────────────────────────── */
+  .pbanner{background:linear-gradient(120deg,var(--p),color-mix(in srgb,var(--p) 60%,#11163f));color:#fff;padding:24px}
+  .pbanner .wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .pbanner .ico{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .pbanner .ico svg{width:26px;height:26px;color:#fff}
+  .pbanner h1{margin:0;font-size:22px;line-height:1.1}
+  .pbanner .tag{margin:2px 0 0;font-size:13px;opacity:.85}
+  .pbanner .spacer{flex:1}
+  .switcher{position:relative}
+  .switcher>summary{list-style:none;cursor:pointer;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.32);
+            color:#fff;font-size:13px;font-weight:600;padding:8px 14px;border-radius:22px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .switcher>summary::-webkit-details-marker{display:none}
+  .switcher>summary svg{width:15px;height:15px}
+  .switcher[open]>summary{background:rgba(255,255,255,.26)}
+  .switcher-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:230px;background:#fff;border-radius:13px;box-shadow:0 12px 38px rgba(0,0,0,.28);overflow:hidden;z-index:200}
+  .switcher-menu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:14px;
+            font-weight:600;color:var(--navy);padding:11px 16px;cursor:pointer}
+  .switcher-menu button:hover{background:#f0f4ff}
+  .switcher-menu button.active{background:color-mix(in srgb,var(--sky) 12%,#fff)}
+  .switcher-menu .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .switcher-menu .sep{border-top:1px solid var(--line)}
+  .switcher-menu .muted{color:var(--gray);font-weight:600}
+  .upload-link{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:10px;color:#fff;
+       background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);transition:background .15s ease}
+  .upload-link:hover{background:rgba(255,255,255,.24)}
+  .upload-link svg{width:22px;height:22px;display:block}
+
   main{max-width:1180px;margin:0 auto;padding:26px 24px 60px}
+  .stats{display:flex;gap:26px;margin:2px 0 22px;flex-wrap:wrap}
+  .stat b{display:block;font-size:22px;color:var(--p)}.stat span{font-size:12px;color:var(--gray)}
   #status{padding:14px 16px;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--gray)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
-  .card{background:#fff;border:1px solid var(--line);border-radius:14px;border-top:5px solid var(--b,var(--navy));
-        padding:20px;box-shadow:0 1px 2px rgba(20,24,48,.05);overflow:hidden}
-  .hero{position:relative;margin:-20px -20px 15px;border-radius:13px 13px 0 0;overflow:hidden;aspect-ratio:3/2;background:#eef0f5}
-  .hero img{width:100%;height:100%;object-fit:cover;display:block}
-  .hero-badge{position:absolute;left:10px;bottom:10px;font-size:10px;font-weight:700;letter-spacing:.4px;color:#fff;padding:3px 9px;border-radius:999px}
-  .hero-badge.enhanced{background:rgba(41,47,123,.88)}
-  .hero-badge.generated{background:rgba(60,64,82,.82)}
-  .hero-badge.community{background:rgba(46,125,50,.9)}
-  .thumbs{display:flex;gap:6px;margin:-6px 0 2px;flex-wrap:wrap}
-  .thumb{width:46px;height:34px;border-radius:6px;object-fit:cover;cursor:pointer;border:2px solid transparent;display:block}
-  .thumb.active,.thumb:hover{border-color:var(--b,var(--navy))}
-  .card h2{margin:0;font-size:20px;line-height:1.2;color:var(--bname,var(--navy));font-family:var(--bfont,inherit)}
-  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px}
-  .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;letter-spacing:.3px}
-  .b-mem{background:var(--btint,#eef0fa);color:var(--bname,var(--navy))}
-  .b-ver{background:#eef7ee;color:#2f7d34}
-  .web{font-size:13px;text-decoration:none;color:var(--bname,var(--navy))}.web:hover{text-decoration:underline}
-  .summary{margin:13px 0 0;color:#3a3f52}
-  .addr{margin-top:9px;font-size:13px;color:var(--gray)}
-  .addr a{color:var(--bname,var(--navy));text-decoration:none}.addr a:hover{text-decoration:underline}
-  .sec{margin-top:15px}
-  .sec h3{margin:0 0 7px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--gray)}
-  .chips{display:flex;flex-wrap:wrap;gap:6px}
-  .chip{font-size:12px;border-radius:8px;padding:3px 9px;background:#f1f3fa;border:1px solid var(--line)}
-  .chip.svc{background:var(--btint,#eefaef);border:1px solid var(--bline,#d6efd7);color:var(--bname,#2f7d34)}
-  table.hours{border-collapse:collapse;font-size:13px}table.hours td{padding:1px 12px 1px 0;color:#3a3f52}
-  .ev{border-left:3px solid var(--a,var(--sky));padding:2px 0 2px 10px;margin-bottom:9px}
-  .ev .t{font-weight:600;font-size:14px}
-  .ev .d{font-size:12px;color:var(--a,var(--sky));font-weight:600}
-  .ev .m{font-size:12px;color:var(--gray)}
-  .social{display:flex;flex-wrap:wrap;gap:8px}
-  .social a{font-size:13px;color:var(--bname,var(--sky));text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:3px 9px}
-  .social a:hover{border-color:var(--b,var(--sky))}
-  .contact{font-size:13px}.contact a{color:var(--bname,var(--navy))}
-  .foot{margin-top:14px;padding-top:11px;border-top:1px dashed var(--line);font-size:11px;color:var(--gray);display:flex;gap:8px;align-items:center}
-  .sw{width:11px;height:11px;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,.1)}
-  /* condensed cards that open entity.html */
-  .grid{grid-template-columns:repeat(auto-fill,minmax(285px,1fr))}
-  .card{display:block;padding:0;border-top-width:4px;text-decoration:none;color:inherit;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
-  .card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(20,24,48,.13)}
-  .hero{margin:0;border-radius:13px 13px 0 0;aspect-ratio:16/10}
-  .hero.noimg{background:linear-gradient(120deg,var(--b,#292F7B),var(--a,#00ADEF))}
-  .hero .count{position:absolute;right:10px;bottom:10px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:999px}
-  .card h2{margin:14px 16px 0;font-size:18px}
-  .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:7px 16px 0}
-  .cat{font-size:12px;color:var(--gray)}
-  .addr{margin:8px 16px 0;font-size:12.5px}
-  .teaser{margin:8px 16px 16px;font-size:13.5px;color:#464d5e;line-height:1.5}
+
   /* upcoming events strip */
   .events{margin:0 0 30px}
-  .events-h{display:flex;align-items:center;gap:9px;font-size:19px;color:var(--navy);margin:0 0 14px}
+  .events-h{display:flex;align-items:center;gap:9px;font-size:19px;color:var(--p);margin:0 0 14px}
   .events-h svg{width:22px;height:22px}
   .events-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(244px,1fr));gap:14px}
   .evt{display:block;text-decoration:none;color:inherit;background:#fff;border:1px solid var(--line);
-       border-radius:12px;border-left:4px solid var(--sky);padding:13px 15px;
+       border-radius:12px;border-left:4px solid var(--p);padding:13px 15px;
        box-shadow:0 1px 2px rgba(20,24,48,.05);transition:transform .12s ease,box-shadow .12s ease}
   .evt:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(20,24,48,.12)}
-  .evt .when{font-size:12px;font-weight:700;color:var(--sky);letter-spacing:.3px;text-transform:uppercase}
+  .evt .when{font-size:12px;font-weight:700;color:var(--p);letter-spacing:.3px;text-transform:uppercase}
   .evt .t{font-size:15px;font-weight:600;line-height:1.25;margin:5px 0 0}
   .evt .who{font-size:13px;color:var(--navy);margin-top:6px}
   .evt .where{font-size:12px;color:var(--gray);margin-top:3px}
+
+  .sec-h{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--gray);margin:0 0 12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:20px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;border-top:4px solid var(--b,var(--p));
+        display:block;padding:0;text-decoration:none;color:inherit;cursor:pointer;overflow:hidden;
+        box-shadow:0 1px 2px rgba(20,24,48,.05);transition:transform .12s ease,box-shadow .12s ease}
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(20,24,48,.13)}
+  .hero{position:relative;aspect-ratio:16/10;background:#eef0f5;overflow:hidden;border-radius:13px 13px 0 0}
+  .hero img{width:100%;height:100%;object-fit:cover;display:block}
+  .hero.noimg{background:linear-gradient(120deg,var(--b,#292F7B),var(--a,#00ADEF))}
+  .hero-badge{position:absolute;left:10px;bottom:10px;font-size:10px;font-weight:700;letter-spacing:.4px;color:#fff;padding:3px 9px;border-radius:999px}
+  .hero-badge.enhanced{background:rgba(41,47,123,.88)}.hero-badge.generated{background:rgba(60,64,82,.82)}.hero-badge.community{background:rgba(46,125,50,.9)}
+  .hero .count{position:absolute;right:10px;bottom:10px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:999px}
+  .card h2{margin:14px 16px 0;font-size:18px;color:var(--bname,var(--navy));font-family:var(--bfont,inherit);line-height:1.2}
+  .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:7px 16px 0}
+  .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--btint,#eef0fa);color:var(--bname,var(--navy))}
+  .cat{font-size:12px;color:var(--gray)}
+  .addr{margin:8px 16px 0;font-size:12.5px;color:var(--gray)}
+  .teaser{margin:8px 16px 16px;font-size:13.5px;color:#464d5e;line-height:1.5}
+  .empty{padding:40px 16px;text-align:center;color:var(--gray)}
+</style>
+<style>
+/* ── Admin entry — discreet badge → password modal → slide-in panel ───────── */
+:root{
+  --adm-accent:#00ADEF; --adm-accent-hover:#33c0f3; --adm-ink:#e8eefc;
+  --adm-panel-bg:linear-gradient(165deg,#2b3180 0%,#21266a 45%,#141a4e 100%);
+  --adm-modal-bg:rgba(20,24,60,0.96); --adm-modal-ink:#0e1340;
+  --adm-font-display:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --adm-font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+#adm{position:fixed;bottom:24px;right:24px;z-index:900;font-family:var(--adm-font-display)}
+#adm-btn{width:32px;height:32px;border-radius:50%;border:1px solid color-mix(in srgb,var(--adm-accent) 35%,transparent);
+  background:rgba(2,30,46,0.4);color:color-mix(in srgb,var(--adm-accent) 55%,transparent);font-size:0.95rem;cursor:pointer;
+  opacity:0.35;padding:0;line-height:1;display:flex;align-items:center;justify-content:center;font-weight:700;
+  transition:opacity .25s,color .25s,border-color .25s,background .25s}
+#adm-btn:hover,#adm-btn:focus-visible,#adm[aria-expanded="true"] #adm-btn{opacity:1;color:var(--adm-accent);border-color:var(--adm-accent);background:rgba(2,30,46,0.9);outline:none}
+#adm-lock{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;background:rgba(2,16,26,0.72);backdrop-filter:blur(6px);font-family:var(--adm-font-body);animation:admFade .2s ease-out}
+#adm-lock[hidden]{display:none}
+#adm-lock-box{position:relative;background:var(--adm-modal-bg);border:1px solid color-mix(in srgb,var(--adm-accent) 30%,transparent);border-radius:16px;padding:40px 36px;width:min(380px,90vw);text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.55)}
+#adm-lock-box img{height:40px;margin:0 auto 20px;display:block}
+#adm-lock-box h2{font-family:var(--adm-font-display);font-size:1.5rem;font-weight:800;color:var(--adm-accent);letter-spacing:0.04em;margin:0 0 6px}
+#adm-lock-box .adm-lock-sub{font-size:0.82rem;color:color-mix(in srgb,var(--adm-ink) 55%,transparent);margin:0 0 24px}
+#adm-lock-input{width:100%;padding:12px 16px;background:rgba(0,0,0,0.3);border:1px solid color-mix(in srgb,var(--adm-accent) 30%,transparent);border-radius:8px;color:#fff;font-size:0.95rem;font-family:inherit;outline:none;transition:border-color .2s}
+#adm-lock-input:focus{border-color:var(--adm-accent)}
+#adm-lock-btn{margin-top:14px;width:100%;padding:12px;background:var(--adm-accent);color:var(--adm-modal-ink);border:0;border-radius:8px;font-family:var(--adm-font-display);font-size:1rem;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:background .2s}
+#adm-lock-btn:hover{background:var(--adm-accent-hover)}
+#adm-lock-error{font-size:0.78rem;color:#ff7a7a;margin:12px 0 0;min-height:1.1em}
+.adm-shake{animation:admShake .35s}
+@keyframes admShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+@keyframes admFade{from{opacity:0}to{opacity:1}}
+#adm-scrim{position:fixed;inset:0;z-index:1100;background:rgba(2,16,26,0.55);backdrop-filter:blur(2px);animation:admFade .25s ease-out}
+#adm-scrim[hidden]{display:none}
+#adm-panel{position:fixed;top:0;right:0;z-index:1110;width:min(340px,88vw);height:100%;background:var(--adm-panel-bg);border-left:1px solid color-mix(in srgb,var(--adm-accent) 30%,transparent);box-shadow:-24px 0 70px rgba(0,0,0,0.5);transform:translateX(100%);transition:transform .34s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;font-family:var(--adm-font-body)}
+#adm-panel.open{transform:translateX(0)}
+.adm-panel-head{display:flex;align-items:flex-end;justify-content:space-between;padding:26px 24px 18px;border-bottom:1px solid color-mix(in srgb,var(--adm-accent) 18%,transparent)}
+.adm-eyebrow{display:block;font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:color-mix(in srgb,var(--adm-accent) 85%,transparent);margin-bottom:4px}
+.adm-panel-brand h3{font-family:var(--adm-font-display);font-size:1.4rem;font-weight:800;color:#fff;letter-spacing:0.03em;margin:0;line-height:1}
+#adm-panel-close{background:transparent;border:0;cursor:pointer;color:color-mix(in srgb,var(--adm-ink) 60%,transparent);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:color .15s,background .15s}
+#adm-panel-close svg{width:20px;height:20px}
+#adm-panel-close:hover{color:var(--adm-accent);background:color-mix(in srgb,var(--adm-accent) 12%,transparent)}
+.adm-links{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:4px}
+.adm-links a{display:flex;align-items:flex-start;gap:13px;padding:13px 14px;border-radius:10px;text-decoration:none;color:var(--adm-ink);border:1px solid transparent;transition:background .15s,border-color .15s,transform .15s}
+.adm-links a:hover{background:color-mix(in srgb,var(--adm-accent) 10%,transparent);border-color:color-mix(in srgb,var(--adm-accent) 28%,transparent);transform:translateX(-2px)}
+.adm-ic{flex:none;width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--adm-accent) 14%,transparent);color:var(--adm-accent);border:1px solid color-mix(in srgb,var(--adm-accent) 22%,transparent)}
+.adm-ic svg{width:20px;height:20px}
+.adm-links a:hover .adm-ic{background:color-mix(in srgb,var(--adm-accent) 22%,transparent)}
+.adm-txt{display:flex;flex-direction:column;gap:2px;padding-top:1px}
+.adm-txt b{font-weight:600;font-size:0.92rem;color:#fff}
+.adm-txt small{font-size:0.72rem;line-height:1.4;color:color-mix(in srgb,var(--adm-ink) 62%,transparent)}
+.adm-panel-foot{padding:14px 18px 20px;border-top:1px solid rgba(255,255,255,0.08)}
+#adm-lock-out{display:flex;align-items:center;gap:9px;width:100%;padding:11px 14px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:9px;color:color-mix(in srgb,var(--adm-ink) 60%,transparent);font-family:var(--adm-font-body);font-size:0.8rem;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
+#adm-lock-out svg{width:16px;height:16px}
+#adm-lock-out:hover{color:var(--adm-accent);border-color:color-mix(in srgb,var(--adm-accent) 40%,transparent);background:color-mix(in srgb,var(--adm-accent) 8%,transparent)}
+@media (prefers-reduced-motion:reduce){#adm-panel{transition:none}#adm-lock,#adm-scrim{animation:none}.adm-shake{animation:none}}
 </style>
 </head>
 <body>
-<header><div class="wrap">
-  <a class="upload-link" href="capture.html" aria-label="Upload an image" title="Upload an image">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-      <polyline points="17 8 12 3 7 8"/>
-      <line x1="12" y1="3" x2="12" y2="15"/>
-    </svg>
-  </a>
-  <h1>Batavia, IL — Agent-Collected Data</h1>
-  <p>Live from Supabase. Each record was discovered and structured by an AI agent (scout → Claude Sonnet → database),
-     including the org's own brand colors and fonts — so every panel is styled in that organization's identity.
-     <a href="docs.html" style="color:#cfe9ff;white-space:nowrap">📖 How it works →</a></p>
-  <div class="stats" id="stats"></div>
-</div></header>
-<main>
-  <div id="status">Loading agent-collected data…</div>
-  <section class="events" id="events" style="display:none">
-    <h2 class="events-h">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
-        <line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
-      </svg>
-      Upcoming Events
-    </h2>
-    <div class="events-row" id="events-row"></div>
-  </section>
-  <div class="grid" id="grid"></div>
-</main>
 
+<!-- SCREEN 1 — persona selector -->
+<section id="screen-personas">
+  <div class="pick-head">
+    <div class="eyebrow">Batavia, IL</div>
+    <h1>Who are you here as?</h1>
+    <p>Pick the lens that fits you and we'll surface the Batavia organizations, events, and places that matter most to you. You can switch anytime.</p>
+  </div>
+  <div class="pick-grid wrap" id="pick-grid"></div>
+  <div class="pick-foot">
+    <button id="browse-all">Just show me everything →</button>
+  </div>
+</section>
+
+<!-- SCREEN 2 — persona directory -->
+<div id="screen-dir" class="hide">
+  <header class="pbanner">
+    <div class="wrap">
+      <span class="ico" id="banner-ico"></span>
+      <div>
+        <h1 id="banner-title">Batavia Directory</h1>
+        <p class="tag" id="banner-tag">Agent-collected, community-owned data</p>
+      </div>
+      <span class="spacer"></span>
+      <details class="switcher" id="switcher">
+        <summary>Change view
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="switcher-menu" id="switcher-menu"></div>
+      </details>
+      <a class="upload-link" href="capture.html" aria-label="Upload a photo" title="Upload a photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+  <main>
+    <div id="status">Loading agent-collected data…</div>
+    <div class="stats" id="stats"></div>
+    <section class="events hide" id="events">
+      <h2 class="events-h">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
+        </svg>
+        Upcoming Events
+      </h2>
+      <div class="events-row" id="events-row"></div>
+    </section>
+    <h3 class="sec-h" id="grid-h"></h3>
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+
+<script src="personas.js"></script>
 <script>
 const SUPABASE_URL = "https://kgbudsefckrlumxikmtp.supabase.co";
 const ANON_KEY = "sb_publishable_2qxHXOJVdUh4CywqU5u5uQ_4YheJJW6";  // publishable; RLS read-only
+window.SUPABASE_URL = SUPABASE_URL; window.ANON_KEY = ANON_KEY;     // for logInteraction()
 
-const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const esc=s=>(s??"").toString().replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmtT=t=>{if(!t)return"";const[h,m]=t.split(":");let H=+h;const ap=H>=12?"PM":"AM";H=H%12||12;return`${H}:${m} ${ap}`};
-const platName=p=>({facebook:"Facebook",instagram:"Instagram",linkedin:"LinkedIn",x:"X",youtube:"YouTube",tiktok:"TikTok"}[p]||p);
-const lum=h=>{const[r,g,b]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);return .2126*r+.7152*g+.0722*b};
-const readable=h=>(h&&/^#[0-9a-f]{6}$/i.test(h)&&lum(h)<.72)?h:"#2a2f45";   // dark-enough for text
-const ev=s=>{ // format an event datetime
-  if(!s) return {d:"Date TBD",m:""};
-  const dt=new Date(s); if(isNaN(dt)) return {d:"Date TBD",m:""};
-  const hasTime=!/T00:00/.test(s);
-  return {d:`${DAYS[dt.getDay()]}, ${MON[dt.getMonth()]} ${dt.getDate()}`, m:hasTime?dt.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):""};
+// Flat persona icons (currentColor, 24x24) — see global iconography rules.
+const ICONS = {
+  family:'<path d="M3 21v-2a4 4 0 0 1 4-4h3a4 4 0 0 1 4 4v2"/><circle cx="8.5" cy="7" r="3"/><path d="M16 11a3 3 0 1 0-1.8-5.4"/><path d="M21 21v-2a4 4 0 0 0-3-3.87"/>',
+  teen:'<path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>',
+  socialite:'<path d="M8 22h8"/><path d="M12 11v11"/><path d="M5 3h14l-7 8-7-8Z"/>',
+  settler:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.2V21h14V9.2"/><path d="M9.5 21v-6h5v6"/>',
+  senior:'<path d="M19 14c1.49-1.46 3-3.21 3-5.5A4.5 4.5 0 0 0 12 5 4.5 4.5 0 0 0 2 8.5c0 2.29 1.5 4.04 3 5.5l7 7Z"/>',
+  business:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  volunteer:'<path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8Z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2Z"/>',
+  all:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>',
 };
+const svg = key => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[key]||ICONS.all}</svg>`;
+
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const esc=s=>(s??"").toString().replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const lum=h=>{const[r,g,b]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);return .2126*r+.7152*g+.0722*b};
+const readable=h=>(h&&/^#[0-9a-f]{6}$/i.test(h)&&lum(h)<.72)?h:"#2a2f45";
+const evfmt=s=>{ if(!s) return {d:"Date TBD",m:""}; const dt=new Date(s); if(isNaN(dt)) return {d:"Date TBD",m:""};
+  const hasTime=!/T00:00/.test(s);
+  return {d:`${DAYS[dt.getDay()]}, ${MON[dt.getMonth()]} ${dt.getDate()}`, m:hasTime?dt.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):""}; };
+
+let ALL=[], CURRENT=null;   // CURRENT: persona key, 'all', or null (chooser)
 
 async function load(){
   const sel="id,name,membership_level,summary,categories,services,events,brand,hero,media,location";
   const url=`${SUPABASE_URL}/rest/v1/entity_full?or=(last_verified_by.like.claude*,hero.not.is.null)&select=${sel}&order=name`;
-  let data;
   try{
     const r=await fetch(url,{headers:{apikey:ANON_KEY,Authorization:"Bearer "+ANON_KEY}});
     if(!r.ok) throw new Error(`HTTP ${r.status} — ${await r.text()}`);
-    data=await r.json();
+    ALL=await r.json();
   }catch(e){
     document.getElementById("status").innerHTML=`Could not load: ${esc(e.message)}<br><br>If file://, serve it: <code>cd web &amp;&amp; python3 -m http.server 8000</code>`;
     return;
   }
-  injectFonts(data);
-  render(data);
+  injectFonts(ALL);
+  buildSwitcher();
+  renderSelector();
+  // Restore a prior choice (URL ?persona= wins, else last visit).
+  const fromUrl=new URLSearchParams(location.search).get("persona");
+  const saved=fromUrl || localStorage.getItem("persona");
+  if(saved) selectPersona(saved, {push:false});
 }
 
 function injectFonts(items){
@@ -155,51 +263,117 @@ function injectFonts(items){
   if(!fams.size) return;
   const q=[...fams].map(f=>"family="+encodeURIComponent(f).replace(/%20/g,"+")).join("&");
   const link=document.createElement("link"); link.rel="stylesheet";
-  link.href=`https://fonts.googleapis.com/css2?${q}&display=swap`;  // Google ignores families it doesn't have
+  link.href=`https://fonts.googleapis.com/css2?${q}&display=swap`;
   document.head.appendChild(link);
 }
 
+/* ── Screen 1 ─────────────────────────────────────────────────────────────── */
+function renderSelector(){
+  document.getElementById("pick-grid").innerHTML = window.PERSONAS.map(p=>`
+    <button class="pcard" data-key="${p.key}" style="--pc:${p.color}">
+      <span class="ico">${svg(p.key)}</span>
+      <h3>${esc(p.label)}</h3>
+      <p class="tag">${esc(p.tagline)}</p>
+      <span class="go">Explore ${esc(p.label.split(" ")[0])} →</span>
+    </button>`).join("");
+}
+document.getElementById("pick-grid").addEventListener("click",e=>{
+  const b=e.target.closest("[data-key]"); if(b) selectPersona(b.dataset.key);
+});
+document.getElementById("browse-all").addEventListener("click",()=>selectPersona("all"));
+
+/* ── Switcher ─────────────────────────────────────────────────────────────── */
+function buildSwitcher(){
+  const items = window.PERSONAS.map(p=>
+    `<button data-key="${p.key}"><span class="dot" style="background:${p.color}"></span>${esc(p.label)}</button>`).join("");
+  document.getElementById("switcher-menu").innerHTML =
+    items +
+    `<button data-key="all" class="sep"><span class="dot" style="background:var(--navy)"></span>Everything</button>` +
+    `<button data-key="__chooser__" class="muted">Back to persona chooser…</button>`;
+}
+document.getElementById("switcher-menu").addEventListener("click",e=>{
+  const b=e.target.closest("[data-key]"); if(!b) return;
+  document.getElementById("switcher").removeAttribute("open");
+  if(b.dataset.key==="__chooser__") return showChooser();
+  selectPersona(b.dataset.key);
+});
+
+/* ── Navigation / persistence ─────────────────────────────────────────────── */
+function showChooser(){
+  CURRENT=null;
+  localStorage.removeItem("persona");
+  history.replaceState({}, "", location.pathname);
+  document.getElementById("screen-dir").classList.add("hide");
+  document.getElementById("screen-personas").classList.remove("hide");
+  window.scrollTo(0,0);
+}
+
+function selectPersona(key, opt){
+  opt=opt||{};
+  const p=window.personaByKey(key);            // null for 'all'/unknown
+  CURRENT=key;
+  if(opt.push!==false){
+    localStorage.setItem("persona", key);
+    history.replaceState({}, "", `?persona=${encodeURIComponent(key)}`);
+  }
+  window.logInteraction("persona_selected", {persona:key});
+  const accent = p ? p.color : "var(--navy)";
+  document.documentElement.style.setProperty("--p", accent);
+  document.getElementById("banner-ico").innerHTML = svg(p?p.key:"all");
+  document.getElementById("banner-title").textContent = p ? p.label : "Everything in Batavia";
+  document.getElementById("banner-tag").textContent = p ? p.tagline : "Every agent-collected organization";
+  // mark active item
+  document.querySelectorAll("#switcher-menu button").forEach(b=>b.classList.toggle("active", b.dataset.key===key));
+  document.getElementById("screen-personas").classList.add("hide");
+  document.getElementById("screen-dir").classList.remove("hide");
+  renderDirectory();
+  window.scrollTo(0,0);
+}
+
+/* ── Screen 2 render ──────────────────────────────────────────────────────── */
+function currentItems(){
+  return (CURRENT && CURRENT!=="all") ? window.rankForPersona(CURRENT, ALL) : ALL.slice();
+}
+
+function renderDirectory(){
+  const items=currentItems();
+  document.getElementById("status").classList.add("hide");
+  const p=window.personaByKey(CURRENT);
+  const tot=items.reduce((a,e)=>{a.ev+=(e.events||[]).length;a.svc+=(e.services||[]).length;return a;},{ev:0,svc:0});
+  document.getElementById("stats").innerHTML=`
+    <div class="stat"><b>${items.length}</b><span>${p?'places for you':'organizations'}</span></div>
+    <div class="stat"><b>${tot.ev}</b><span>upcoming events</span></div>
+    <div class="stat"><b>${tot.svc}</b><span>services</span></div>`;
+  renderEvents(items);
+  document.getElementById("grid-h").textContent = p ? `Recommended for ${p.label}` : "All organizations";
+  renderGrid(items);
+}
+
 function renderEvents(items){
-  // Flatten every entity's upcoming, dated events into one chronological list.
   const evs=[];
   items.forEach(e=>(e.events||[]).forEach(x=>{ if(x.starts_at) evs.push({...x,_eid:e.id,_ename:e.name}); }));
   evs.sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
-  const top=evs.slice(0,8);
-  if(!top.length) return;   // nothing dated → leave the section hidden
+  const top=evs.slice(0,8), sec=document.getElementById("events");
+  if(!top.length){ sec.classList.add("hide"); return; }
   document.getElementById("events-row").innerHTML=top.map(x=>{
-    const f=ev(x.starts_at);
-    const when=esc(f.d)+(f.m?` · ${esc(f.m)}`:"");
-    return `<a class="evt" href="entity.html?id=${x._eid}">
-      <div class="when">${when}</div>
-      <div class="t">${esc(x.title)}</div>
-      <div class="who">${esc(x._ename)}</div>
-      ${x.location?`<div class="where">${esc(x.location)}</div>`:""}
-    </a>`;
+    const f=evfmt(x.starts_at), when=esc(f.d)+(f.m?` · ${esc(f.m)}`:"");
+    return `<a class="evt" href="entity.html?id=${x._eid}" data-id="${x._eid}">
+      <div class="when">${when}</div><div class="t">${esc(x.title)}</div>
+      <div class="who">${esc(x._ename)}</div>${x.location?`<div class="where">${esc(x.location)}</div>`:""}</a>`;
   }).join("");
-  document.getElementById("events").style.display="block";
+  sec.classList.remove("hide");
 }
 
-function render(items){
-  document.getElementById("status").style.display="none";
-  const tot=items.reduce((a,e)=>{a.svc+=e.services.length;a.ev+=e.events.length;a.br+=e.brand?1:0;return a;},{svc:0,ev:0,br:0});
-  document.getElementById("stats").innerHTML=`
-    <div class="stat"><b>${items.length}</b><span>entities enriched</span></div>
-    <div class="stat"><b>${tot.svc}</b><span>services</span></div>
-    <div class="stat"><b>${tot.ev}</b><span>upcoming events</span></div>
-    <div class="stat"><b>${tot.br}</b><span>with brand</span></div>`;
-
-  renderEvents(items);
-
-  const rank=e=>(e.hero&&e.hero.kind==='community')?0:(e.hero?1:2);  // community photos first
-  items=items.slice().sort((a,b)=>rank(a)-rank(b)||a.name.localeCompare(b.name));
-  document.getElementById("grid").innerHTML=items.map(e=>{
+function renderGrid(items){
+  const g=document.getElementById("grid");
+  if(!items.length){ g.innerHTML=`<div class="empty">No matches yet for this view — more Batavia orgs are being added every day. Try “Change view → Everything”.</div>`; return; }
+  g.innerHTML=items.map(e=>{
     const b=e.brand||{};
     const hk=e.hero&&e.hero.kind;
-    const hbadge=hk==='community'?'📷 Community Photo':hk==='enhanced'?'✨ AI Enhanced':hk==='generated'?'✨ AI Generated':'';
-    const p=/^#[0-9a-f]{6}$/i.test(b.primary)?b.primary:"#292F7B";
-    const a=/^#[0-9a-f]{6}$/i.test(b.accent)?b.accent:"#00ADEF";
-    const vars=`--b:${p};--a:${a};--bname:${readable(p)};--btint:${p}14;--bline:${p}40`+
-               (b.font_heading?`;--bfont:'${esc(b.font_heading)}',Georgia,serif`:"");
+    const hbadge=hk==='community'?'Community Photo':hk==='enhanced'?'AI Enhanced':hk==='generated'?'AI Generated':'';
+    const pc=/^#[0-9a-f]{6}$/i.test(b.primary)?b.primary:"#292F7B";
+    const ac=/^#[0-9a-f]{6}$/i.test(b.accent)?b.accent:"#00ADEF";
+    const vars=`--b:${pc};--a:${ac};--bname:${readable(pc)};--btint:${pc}14`+(b.font_heading?`;--bfont:'${esc(b.font_heading)}',Georgia,serif`:"");
     const extra=(e.media&&e.media.length>1)?`<span class="count">+${e.media.length-1}</span>`:"";
     const hero=e.hero&&e.hero.url
       ?`<div class="hero"><img src="${esc(e.hero.url)}" alt="" loading="lazy">${hbadge?`<span class="hero-badge ${hk}">${hbadge}</span>`:""}${extra}</div>`
@@ -207,16 +381,90 @@ function render(items){
     const cat=(e.categories||[])[0]||"";
     const addr=e.location&&e.location.address?[e.location.address,e.location.city].filter(Boolean).join(", "):"";
     const teaser=e.summary?esc(e.summary.length>118?e.summary.slice(0,118).replace(/\s+\S*$/,"")+"…":e.summary):"";
-    return `<a class="card" style="${vars}" href="entity.html?id=${e.id}">
+    return `<a class="card" style="${vars}" href="entity.html?id=${e.id}" data-id="${e.id}">
       ${hero}
       <h2>${esc(e.name)}</h2>
-      <div class="meta">${(e.membership_level&&e.membership_level!=='Unknown')?`<span class="badge b-mem">${esc(e.membership_level)}</span>`:""}${cat?`<span class="cat">${esc(cat)}</span>`:""}</div>
-      ${addr?`<div class="addr">📍 ${esc(addr)}</div>`:""}
+      <div class="meta">${(e.membership_level&&e.membership_level!=='Unknown')?`<span class="badge">${esc(e.membership_level)}</span>`:""}${cat?`<span class="cat">${esc(cat)}</span>`:""}</div>
+      ${addr?`<div class="addr">${esc(addr)}</div>`:""}
       ${teaser?`<p class="teaser">${teaser}</p>`:""}
     </a>`;
   }).join("");
 }
+// Log org opens (event delegation on the directory).
+document.getElementById("screen-dir").addEventListener("click",e=>{
+  const a=e.target.closest(".card[data-id], .evt[data-id]"); if(!a) return;
+  window.logInteraction("org_clicked", {id:a.dataset.id, persona:CURRENT, from:a.classList.contains("evt")?"event":"card"});
+});
+
 load();
+</script>
+
+<!-- ── Admin entry — discreet badge → password modal → slide-in panel ──────── -->
+<div id="adm">
+  <button id="adm-btn" type="button" aria-label="Admin access" aria-haspopup="dialog" aria-expanded="false">A</button>
+</div>
+<div id="adm-lock" hidden>
+  <div id="adm-lock-box" role="dialog" aria-modal="true" aria-labelledby="adm-lock-title">
+    <img src="icon-192.png" alt="BataviaIL" onerror="this.style.display='none'">
+    <h2 id="adm-lock-title">Admin Access</h2>
+    <p class="adm-lock-sub">Internal area · enter the password to continue.</p>
+    <input id="adm-lock-input" type="password" placeholder="Enter password" autocomplete="current-password">
+    <button id="adm-lock-btn" type="button">Enter</button>
+    <p id="adm-lock-error" role="alert"></p>
+  </div>
+</div>
+<div id="adm-scrim" hidden></div>
+<aside id="adm-panel" role="dialog" aria-modal="true" aria-label="Admin links" aria-hidden="true">
+  <div class="adm-panel-head">
+    <div class="adm-panel-brand"><span class="adm-eyebrow">BataviaIL</span><h3>Admin</h3></div>
+    <button id="adm-panel-close" type="button" aria-label="Close admin panel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <nav class="adm-links">
+    <a href="docs.html">
+      <span class="adm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg></span>
+      <span class="adm-txt"><b>System Documentation</b><small>How the whole data system works</small></span>
+    </a>
+    <a href="capture.html">
+      <span class="adm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+      <span class="adm-txt"><b>Photo Capture</b><small>Contributor on-location photo tool</small></span>
+    </a>
+  </nav>
+  <div class="adm-panel-foot">
+    <button id="adm-lock-out" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Lock &amp; sign out
+    </button>
+  </div>
+</aside>
+<script>
+(function(){
+  var KEY='batavia_admin', PASS='batavia25';
+  var btn=document.getElementById('adm-btn'); if(!btn) return;
+  var lock=document.getElementById('adm-lock'),lockInput=document.getElementById('adm-lock-input'),
+      lockBtn=document.getElementById('adm-lock-btn'),lockBox=document.getElementById('adm-lock-box'),
+      lockErr=document.getElementById('adm-lock-error'),panel=document.getElementById('adm-panel'),
+      scrim=document.getElementById('adm-scrim'),panelClose=document.getElementById('adm-panel-close'),
+      signOut=document.getElementById('adm-lock-out');
+  function authed(){try{return sessionStorage.getItem(KEY)==='1';}catch(e){return false;}}
+  function openPanel(){scrim.hidden=false;panel.classList.add('open');panel.setAttribute('aria-hidden','false');btn.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}
+  function closePanel(){panel.classList.remove('open');scrim.hidden=true;panel.setAttribute('aria-hidden','true');btn.setAttribute('aria-expanded','false');document.body.style.overflow='';}
+  function openLock(){lock.hidden=false;lockErr.textContent='';lockInput.value='';setTimeout(function(){lockInput.focus();},30);}
+  function closeLock(){lock.hidden=true;}
+  function tryPass(){
+    if(lockInput.value===PASS){try{sessionStorage.setItem(KEY,'1');}catch(e){}closeLock();openPanel();}
+    else{lockErr.textContent='Incorrect password. Try again.';lockBox.classList.remove('adm-shake');void lockBox.offsetWidth;lockBox.classList.add('adm-shake');lockInput.select();}
+  }
+  btn.addEventListener('click',function(e){e.stopPropagation();if(authed())openPanel();else openLock();});
+  lockBtn.addEventListener('click',tryPass);
+  lockInput.addEventListener('keydown',function(e){if(e.key==='Enter')tryPass();});
+  panelClose.addEventListener('click',closePanel);
+  scrim.addEventListener('click',closePanel);
+  signOut.addEventListener('click',function(){try{sessionStorage.removeItem(KEY);}catch(e){}closePanel();});
+  lock.addEventListener('click',function(e){if(e.target===lock)closeLock();});
+  document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(!lock.hidden)closeLock();else if(panel.classList.contains('open'))closePanel();});
+})();
 </script>
 </body>
 </html>
