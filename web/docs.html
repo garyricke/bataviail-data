@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BataviaIL Data — How It Works</title>
+<link rel="icon" type="image/svg+xml" href="favicon-bataviail-ai.svg">
 <style>
   :root{--navy:#292F7B;--sky:#00ADEF;--green:#60C560;--gray:#7E7F81;--ink:#1c2030;--line:#e5e8f0;--bg:#f6f7fb;--code:#1b1f2e}
   *{box-sizing:border-box}
@@ -48,49 +49,7 @@
 </style>
 </head>
 <body>
-<!-- ── Per-page gate — shares the admin session key (batavia_admin) ───────── -->
-<style>
-  #pw-gate{position:fixed;inset:0;z-index:9999;background:#141a4e;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  #pw-box{position:relative;background:rgba(255,255,255,.04);border:1px solid color-mix(in srgb,#00ADEF 25%,transparent);border-radius:16px;padding:48px 40px;text-align:center;width:min(400px,90vw);box-shadow:0 24px 80px rgba(0,0,0,.5)}
-  #pw-box img{height:48px;margin-bottom:24px;display:block;margin-inline:auto}
-  #pw-box h2{font-size:1.6rem;font-weight:800;color:#00ADEF;letter-spacing:.04em;margin:0 0 8px}
-  #pw-box .sub{font-size:.85rem;color:rgba(232,238,252,.55);margin:0 0 28px}
-  #pw-input{width:100%;padding:12px 16px;background:rgba(0,0,0,.3);border:1px solid color-mix(in srgb,#00ADEF 30%,transparent);border-radius:8px;color:#fff;font-size:.95rem;font-family:inherit;outline:none;transition:border-color .2s}
-  #pw-input:focus{border-color:#00ADEF}
-  #pw-btn{margin-top:14px;width:100%;padding:12px;background:#00ADEF;color:#0e1340;border:0;border-radius:8px;font-weight:700;font-size:1rem;letter-spacing:.04em;cursor:pointer;transition:background .2s}
-  #pw-btn:hover{background:#33c0f3}
-  #pw-error{font-size:.8rem;color:#ff7a7a;margin:12px 0 0;min-height:1.2em}
-  .pw-shake{animation:pwShake .35s}
-  @keyframes pwShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-</style>
-<div id="pw-gate">
-  <div id="pw-box">
-    <img src="icon-192.png" alt="BataviaIL" onerror="this.style.display='none'">
-    <h2>Internal Document</h2>
-    <p class="sub">This page is password protected.</p>
-    <input id="pw-input" type="password" placeholder="Enter password" autocomplete="current-password">
-    <button id="pw-btn">Enter</button>
-    <p id="pw-error"></p>
-  </div>
-</div>
-<script>
-(function(){
-  var KEY='batavia_admin',PASS='batavia25',gate=document.getElementById('pw-gate');
-  if(sessionStorage.getItem(KEY)==='1'){gate.style.display='none';return;}
-  document.body.style.overflow='hidden';
-  function attempt(){
-    if(document.getElementById('pw-input').value===PASS){
-      sessionStorage.setItem(KEY,'1');document.body.style.overflow='';gate.style.display='none';
-    } else {
-      document.getElementById('pw-error').textContent='Incorrect password. Try again.';
-      var box=document.getElementById('pw-box');box.classList.remove('pw-shake');void box.offsetWidth;box.classList.add('pw-shake');
-    }
-  }
-  document.getElementById('pw-btn').addEventListener('click',attempt);
-  document.getElementById('pw-input').addEventListener('keydown',function(e){if(e.key==='Enter')attempt();});
-  document.getElementById('pw-input').focus();
-})();
-</script>
+<!-- Protection is now server-side (Netlify edge function: netlify/edge-functions/internal.js). -->
 <header><div class="w">
   <h1>BataviaIL Data — How It Works</h1>
   <p>A data-first community platform for Batavia, IL: a Supabase source-of-truth grown by an AI agent swarm,
@@ -99,6 +58,7 @@
     <a href="index.html">← Directory</a>
     <a href="capture.html">Capture app</a>
     <a href="https://github.com/garyricke/bataviail-data" target="_blank">GitHub</a>
+    <a href="/internal-logout">Sign out</a>
   </div>
 </div></header>
 

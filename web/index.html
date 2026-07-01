@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BataviaIL — Agent-Collected Data</title>
+<link rel="icon" type="image/svg+xml" href="favicon-bataviail-ai.svg">
 <style>
   :root{ --navy:#292F7B; --sky:#00ADEF; --green:#60C560; --gray:#7E7F81; --ink:#1c2030; --line:#e7e9f0; --bg:#f6f7fb; --p:var(--navy); }
   *{box-sizing:border-box}
@@ -426,6 +427,10 @@ load();
       <span class="adm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg></span>
       <span class="adm-txt"><b>System Documentation</b><small>How the whole data system works</small></span>
     </a>
+    <a href="plan-landing-pages.html">
+      <span class="adm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span>
+      <span class="adm-txt"><b>Landing Pages — Design Plan</b><small>Theme engine &amp; persona theming proposal</small></span>
+    </a>
     <a href="capture.html">
       <span class="adm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
       <span class="adm-txt"><b>Photo Capture</b><small>Contributor on-location photo tool</small></span>
@@ -440,7 +445,7 @@ load();
 </aside>
 <script>
 (function(){
-  var KEY='batavia_admin', PASS='batavia25';
+  var KEY='batavia_admin', PASS='batavia26';  // matches INTERNAL_PW (edge gate) — one secret
   var btn=document.getElementById('adm-btn'); if(!btn) return;
   var lock=document.getElementById('adm-lock'),lockInput=document.getElementById('adm-lock-input'),
       lockBtn=document.getElementById('adm-lock-btn'),lockBox=document.getElementById('adm-lock-box'),

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Internal Area — BataviaIL</title>
+<link rel="icon" type="image/svg+xml" href="favicon-bataviail-ai.svg">
+<style>
+  :root{--navy:#292F7B;--sky:#00ADEF;--ink:#e8eefc}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(165deg,#2b3180 0%,#20266a 46%,#141a4e 100%);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);padding:24px}
+  .box{position:relative;width:min(400px,92vw);background:rgba(255,255,255,.05);
+    border:1px solid color-mix(in srgb,var(--sky) 26%,transparent);border-radius:18px;
+    padding:44px 38px;text-align:center;box-shadow:0 28px 90px rgba(0,0,0,.55)}
+  .box img{height:46px;margin:0 auto 22px;display:block}
+  h1{font-size:1.55rem;font-weight:800;color:var(--sky);letter-spacing:.03em;margin:0 0 6px}
+  .sub{font-size:.85rem;color:color-mix(in srgb,var(--ink) 55%,transparent);margin:0 0 26px}
+  input{width:100%;padding:13px 16px;background:rgba(0,0,0,.32);
+    border:1px solid color-mix(in srgb,var(--sky) 28%,transparent);border-radius:9px;
+    color:#fff;font-size:.98rem;font-family:inherit;outline:none;transition:border-color .2s}
+  input:focus{border-color:var(--sky)}
+  button{margin-top:14px;width:100%;padding:13px;background:var(--sky);color:#0e1340;border:0;
+    border-radius:9px;font-weight:700;font-size:1rem;letter-spacing:.03em;cursor:pointer;transition:background .2s}
+  button:hover{background:#33c0f3}
+  .err{font-size:.8rem;color:#ff8a8a;margin:14px 0 0;min-height:1.1em}
+  .foot{margin-top:22px;font-size:.72rem;color:color-mix(in srgb,var(--ink) 40%,transparent)}
+  .foot a{color:color-mix(in srgb,var(--sky) 80%,transparent);text-decoration:none}
+</style>
+</head>
+<body>
+  <form class="box" method="POST" action="/internal-auth" autocomplete="on">
+    <img src="icon-192.png" alt="BataviaIL" onerror="this.style.display='none'">
+    <h1>Internal Area</h1>
+    <p class="sub">Enter the password to continue.</p>
+    <input id="pw" type="password" name="password" placeholder="Password" autocomplete="current-password" autofocus>
+    <input type="hidden" id="next" name="next" value="/">
+    <button type="submit">Enter</button>
+    <p class="err" id="err"></p>
+    <p class="foot"><a href="index.html">← Back to the public directory</a></p>
+  </form>
+<script>
+  var q = new URLSearchParams(location.search);
+  var next = q.get("next") || "/";
+  if (!next.startsWith("/") || next.startsWith("//")) next = "/";   // same-site only
+  document.getElementById("next").value = next;
+  if (q.get("e")) document.getElementById("err").textContent = "Incorrect password. Try again.";
+  document.getElementById("pw").focus();
+</script>
+</body>
+</html>
