@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landing Pages — Design Plan · BataviaIL</title>
+<link rel="icon" type="image/svg+xml" href="favicon-bataviail-ai.svg">
+<meta name="description" content="How BataviaIL scales from templated entity profiles to thousands of pro-designed landing pages: theme engine, persona theming, and agent-authored content.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Inter (doc) + a few display faces used ONLY to demo per-persona/theme pairings -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Baloo+2:wght@600;700&family=Alfa+Slab+One&family=Bebas+Neue&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#292F7B; --sky:#00ADEF; --green:#60C560; --gray:#7E7F81;
+    --ink:#1b2030; --muted:#5b6478; --line:#e6e9f2; --bg:#f5f6fb; --surface:#ffffff;
+    --maxw:960px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:17px/1.7 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  a{color:var(--navy)}
+  h1,h2,h3{letter-spacing:-.02em;line-height:1.15}
+  code{font:0.86em/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#eef0f8;color:#333a63;padding:2px 6px;border-radius:5px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--sky)}
+
+  /* Hero */
+  header.hero{background:linear-gradient(155deg,#2b3180 0%,#20266a 48%,#161b54 100%);color:#fff;padding:70px 0 60px;position:relative;overflow:hidden}
+  header.hero::after{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;border-radius:50%;
+    background:radial-gradient(circle,rgba(0,173,239,.34),transparent 68%)}
+  header.hero .eyebrow{color:var(--sky)}
+  header.hero h1{font-size:clamp(2rem,5.2vw,3.2rem);margin:14px 0 16px;max-width:16ch}
+  header.hero p.lede{font-size:1.18rem;line-height:1.6;color:rgba(255,255,255,.82);max-width:60ch;margin:0}
+  .hero-meta{display:flex;gap:26px;flex-wrap:wrap;margin-top:30px;font-size:13px;color:rgba(255,255,255,.6)}
+  .hero-meta b{color:#fff;font-weight:600}
+
+  /* TOC */
+  nav.toc{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  nav.toc .wrap{display:flex;gap:6px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+  nav.toc a{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:999px}
+  nav.toc a:hover{background:#eef0f8;color:var(--navy)}
+
+  section.block{padding:56px 0}
+  section.block + section.block{border-top:1px solid var(--line)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;
+    background:var(--navy);color:#fff;font-size:14px;font-weight:700;margin-right:12px;vertical-align:2px}
+  h2.htitle{font-size:clamp(1.5rem,3.4vw,2rem);margin:0 0 6px}
+  .sub{color:var(--muted);font-size:1.05rem;margin:0 0 26px;max-width:64ch}
+  h3{font-size:1.15rem;margin:30px 0 8px}
+  p{margin:0 0 14px}
+  ul{margin:0 0 14px;padding-left:22px}li{margin:6px 0}
+
+  .callout{background:linear-gradient(120deg,#eef7ff,#eafbf0);border:1px solid #d4e8f7;border-left:4px solid var(--sky);
+    border-radius:12px;padding:20px 22px;margin:0 0 8px}
+  .callout .eyebrow{color:var(--navy)}
+  .callout p{margin:6px 0 0;font-size:1.06rem}
+  .callout strong{color:var(--navy)}
+
+  /* Recipe code block */
+  .recipe{background:#12173f;color:#c9d4ff;border-radius:12px;padding:20px 22px;font:14px/1.7 ui-monospace,Menlo,Consolas,monospace;overflow-x:auto}
+  .recipe .c{color:#7f8bd6}.recipe .k{color:#5ee0c0}.recipe .a{color:#ffcf7a}
+
+  /* Ladder */
+  .ladder{display:grid;gap:14px}
+  .rung{display:grid;grid-template-columns:64px 1fr auto;gap:18px;align-items:center;background:var(--surface);
+    border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .rung .tier{font-size:26px;font-weight:800;color:var(--navy);text-align:center;line-height:1}
+  .rung .tier small{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--gray);text-transform:uppercase;margin-top:4px}
+  .rung h4{margin:0 0 3px;font-size:1.05rem}
+  .rung p{margin:0;font-size:.92rem;color:var(--muted)}
+  .rung .who{font-size:.8rem;font-weight:600;color:var(--green);text-align:right;white-space:nowrap}
+  .rung .who span{display:block;color:var(--gray);font-weight:500;margin-top:3px}
+  .rung.t0{border-left:4px solid var(--gray)}
+  .rung.t1{border-left:4px solid var(--sky)}
+  .rung.t2{border-left:4px solid var(--green)}
+  .rung.t3{border-left:4px solid var(--navy)}
+
+  /* Persona theme demo cards */
+  .persona-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-top:8px}
+  .ptheme{border-radius:16px;padding:22px 20px;border:1px solid rgba(0,0,0,.06);overflow:hidden;position:relative;min-height:172px;display:flex;flex-direction:column}
+  .ptheme .plabel{font-size:1.4rem;line-height:1.1;margin:0}
+  .ptheme .ptag{font-size:.82rem;margin:8px 0 0;opacity:.8}
+  .ptheme .swatches{display:flex;gap:6px;margin-top:auto;padding-top:18px}
+  .ptheme .sw{width:22px;height:22px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+  .ptheme .pfont{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin-top:10px}
+
+  /* Generic feature cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:8px}
+  .fcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .fcard .ic{width:42px;height:42px;border-radius:11px;background:#eef0fa;color:var(--navy);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .fcard .ic svg{width:23px;height:23px}
+  .fcard h4{margin:0 0 6px;font-size:1.06rem}
+  .fcard p{margin:0;font-size:.93rem;color:var(--muted)}
+
+  /* Two-col compare */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+  .compare .col{border-radius:14px;padding:20px 22px}
+  .compare .yes{background:#eafbf0;border:1px solid #cdeed6}
+  .compare .no{background:#fff2f2;border:1px solid #f3d4d4}
+  .compare h4{margin:0 0 10px;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase}
+  .compare .yes h4{color:#1f8f45}.compare .no h4{color:#c0392b}
+  .compare ul{margin:0;padding-left:20px}.compare li{font-size:.95rem}
+
+  /* Data model */
+  .schema{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 4px}
+  .schema .row{display:grid;grid-template-columns:200px 1fr;gap:16px;padding:12px 18px;border-top:1px solid var(--line)}
+  .schema .row:first-child{border-top:0}
+  .schema .row code{background:#eef0f8}
+  .schema .row .d{font-size:.93rem;color:var(--muted)}
+  .schema .tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:5px;margin-left:8px;vertical-align:1px}
+  .tag.new{background:#eafbf0;color:#1f8f45}
+  .tag.ext{background:#fff6e6;color:#b7791f}
+
+  /* Roadmap steps */
+  .steps{counter-reset:step;display:grid;gap:14px}
+  .step{display:grid;grid-template-columns:44px 1fr;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;align-items:start}
+  .step::before{counter-increment:step;content:counter(step);width:44px;height:44px;border-radius:11px;background:var(--navy);color:#fff;font-weight:800;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+  .step h4{margin:0 0 4px;font-size:1.06rem}
+  .step p{margin:0;font-size:.94rem;color:var(--muted)}
+  .step .eta{font-size:.78rem;font-weight:700;color:var(--green);white-space:nowrap}
+
+  .decide{background:var(--navy);color:#fff;border-radius:16px;padding:30px 28px;margin-top:10px}
+  .decide h3{margin:0 0 14px;color:#fff}
+  .decide .fork{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .decide .opt{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:18px}
+  .decide .opt b{color:var(--sky)}
+  .decide .opt p{margin:6px 0 0;font-size:.92rem;color:rgba(255,255,255,.78)}
+
+  footer{padding:40px 0 70px;color:var(--gray);font-size:14px;text-align:center}
+  footer a{color:var(--navy)}
+
+  @media(max-width:640px){
+    .compare,.decide .fork{grid-template-columns:1fr}
+    .rung{grid-template-columns:52px 1fr;gap:12px}
+    .rung .who{grid-column:2;text-align:left}
+    .schema .row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">BataviaIL · Internal Design Plan</div>
+    <h1>Landing pages that look designed — at directory scale.</h1>
+    <p class="lede">How we go from one templated profile per entity to <b style="color:#fff">thousands of pro-designed pages</b> — without hand-building thousands of pages. The trick: design ~8 themes, then let data and the agent swarm fill them.</p>
+    <div class="hero-meta">
+      <div>Status · <b>Proposal</b></div>
+      <div>Scope · <b>Persona theming + entity page tiers</b></div>
+      <div>Aligns with · <b>Phases 1–3</b></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#reframe">The reframe</a>
+    <a href="#ladder">The tier ladder</a>
+    <a href="#personas">Persona theming</a>
+    <a href="#engine">The theme engine</a>
+    <a href="#render">Rendering &amp; scale</a>
+    <a href="#data">Data model</a>
+    <a href="#limits">Honest limits</a>
+    <a href="#roadmap">Where to start</a>
+  </div>
+</nav>
+
+<!-- ─────────────────────────────────────────── -->
+<section class="block" id="reframe">
+  <div class="wrap">
+    <h2 class="htitle"><span class="num">0</span>The reframe: design themes, not pages</h2>
+    <p class="sub">Every bespoke reference page (River West, Coffee &amp; Sawdust, Walder, Chuck's, Hager) is the same recipe underneath. The design lives in the <em>theme</em>, not the page.</p>
+
+    <div class="recipe">
+<span class="c">/* what every "pro" page actually is */</span>
+<span class="k">:root</span> { <span class="a">unique palette</span> (5–8 colors) + <span class="a">unique font pairing</span> (display · head · body) }
+  &rarr; hero with real photography + eyebrow + big display headline
+  &rarr; narrative sections in a deliberate order (story &rarr; services &rarr; proof &rarr; CTA)
+    </div>
+
+    <p style="margin-top:22px">River West is "iron / gold / teal, Bebas Neue, gritty gym." Coffee &amp; Sawdust is "espresso / sawdust / walnut, Alfa Slab One, warm maker." These aren't four unique <em>websites</em> — they're four <strong>theme archetypes</strong>. Once a theme exists, pouring a different business's data, palette, and photos through it produces another bespoke-<em>looking</em> page for free.</p>
+
+    <div class="callout">
+      <div class="eyebrow">The whole plan in one line</div>
+      <p>Build <strong>~8 excellent themes</strong>, let <strong>data + the agent swarm</strong> fill them. Thousands of pages that each look designed — without thousands of design projects.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section class="block" id="ladder">
+  <div class="wrap">
+    <h2 class="htitle"><span class="num">1</span>One quality ladder every entity climbs</h2>
+    <p class="sub">Your two questions — "personas feel samey" and "how do we host pro pages" — are the same ladder at two rungs. This ladder <em>is</em> the business model: each rung maps to a roadmap phase.</p>
+
+    <div class="ladder">
+      <div class="rung t0">
+        <div class="tier">0<small>Card</small></div>
+        <div><h4>Directory card</h4><p>Grid preview thumbnail. Exists today.</p></div>
+        <div class="who">Everyone<span>∞ scale · auto</span></div>
+      </div>
+      <div class="rung t1">
+        <div class="tier">1<small>Profile</small></div>
+        <div><h4>Templated profile</h4><p>Today's <code>entity.html</code> — one universal layout, brand-tokened per entity.</p></div>
+        <div class="who">Everyone<span>∞ scale · auto</span></div>
+      </div>
+      <div class="rung t2">
+        <div class="tier">2<small>Themed</small></div>
+        <div><h4>Themed layout</h4><p>Same entity <em>data</em>, rendered through one of ~8 pro themes chosen by category. The River West / C&amp;S look, from data.</p></div>
+        <div class="who">Claimed / enriched<span>thousands</span></div>
+      </div>
+      <div class="rung t3">
+        <div class="tier">3<small>Bespoke</small></div>
+        <div><h4>Bespoke Pro page</h4><p>Custom sections, custom copy, lead form, no directory chrome — the reference samples.</p></div>
+        <div class="who">Paid / claimed<span>dozens–hundreds</span></div>
+      </div>
+    </div>
+
+    <p style="margin-top:22px">Tier 1 = now. Tier 2 = <strong>Phase 1</strong> enrichment. Tier 3 = <strong>Phase 2</strong> claim + <strong>Phase 3</strong> Pro/monetization. You never promise thousands of hand-built pages — you promise thousands of <em>themed</em> pages plus hundreds of bespoke ones.</p>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section class="block" id="personas">
+  <div class="wrap">
+    <h2 class="htitle"><span class="num">2</span>Problem 1 — make personas distinct (the quick win)</h2>
+    <p class="sub">Today each persona is <code>{color, categories}</code> and swaps a single accent — same navy background, same font everywhere. Give each persona a <strong>full theme token set</strong> (palette + font pairing + hero style), and they stop feeling samey. This is the idea you originally proposed, actually realized.</p>
+
+    <div class="persona-grid">
+      <div class="ptheme" style="background:#fbf7ef;color:#3a2f1f">
+        <p class="plabel" style="font-family:'Baloo 2',cursive">Family with Kids</p>
+        <p class="ptag">Schools, play &amp; family-friendly spots</p>
+        <div class="pfont">Baloo 2 · Inter</div>
+        <div class="swatches"><span class="sw" style="background:#60C560"></span><span class="sw" style="background:#ffd166"></span><span class="sw" style="background:#3a2f1f"></span><span class="sw" style="background:#fbf7ef"></span></div>
+      </div>
+      <div class="ptheme" style="background:#140e1f;color:#f3e9ff">
+        <p class="plabel" style="font-family:Fraunces,serif">Downtown Socialite</p>
+        <p class="ptag">Nightlife, dining &amp; culture on the Fox</p>
+        <div class="pfont">Fraunces · Inter</div>
+        <div class="swatches"><span class="sw" style="background:#c9a24a"></span><span class="sw" style="background:#8b5cf6"></span><span class="sw" style="background:#1e1630"></span><span class="sw" style="background:#f3e9ff"></span></div>
+      </div>
+      <div class="ptheme" style="background:#0f1c2e;color:#eaf2ff">
+        <p class="plabel" style="font-family:'Space Grotesk',sans-serif">Business Builder</p>
+        <p class="ptag">Grow, connect &amp; thrive in Batavia</p>
+        <div class="pfont">Space Grotesk · Inter</div>
+        <div class="swatches"><span class="sw" style="background:#00ADEF"></span><span class="sw" style="background:#ef4444"></span><span class="sw" style="background:#16233a"></span><span class="sw" style="background:#eaf2ff"></span></div>
+      </div>
+      <div class="ptheme" style="background:#f4f8f6;color:#123c2e">
+        <p class="plabel" style="font-family:Fraunces,serif">Community Helper</p>
+        <p class="ptag">Give back to the town you love</p>
+        <div class="pfont">Fraunces · Inter</div>
+        <div class="swatches"><span class="sw" style="background:#10b981"></span><span class="sw" style="background:#0e7490"></span><span class="sw" style="background:#123c2e"></span><span class="sw" style="background:#f4f8f6"></span></div>
+      </div>
+    </div>
+
+    <h3>How it stays behind the existing seam</h3>
+    <p>Extend each persona in <code>personas.js</code> with a <code>theme</code> block, then one <code>applyPersonaTheme(key)</code> sets CSS vars and injects the Google fonts — reusing the <code>injectFonts()</code> you already have for entities. No structural rewrite; the <code>rankForPersona</code> / config-as-data seam is untouched. <strong>~half a day</strong>, and it produces the palette + font vocabulary the entity themes reuse.</p>
+
+    <div class="recipe" style="margin-top:8px">
+{ <span class="k">key</span>:<span class="a">"socialite"</span>, <span class="k">label</span>:<span class="a">"Downtown Socialite"</span>, <span class="c">/* …categories… */</span>
+  <span class="k">theme</span>:{ bg:<span class="a">"#140e1f"</span>, surface:<span class="a">"#1e1630"</span>, ink:<span class="a">"#f3e9ff"</span>,
+          accent:<span class="a">"#c9a24a"</span>, accent2:<span class="a">"#8b5cf6"</span>,
+          fontDisplay:<span class="a">"Fraunces"</span>, fontBody:<span class="a">"Inter"</span>, heroStyle:<span class="a">"editorial"</span> } }
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section class="block" id="engine">
+  <div class="wrap">
+    <h2 class="htitle"><span class="num">3</span>Problem 2 — the theme engine (the big prize)</h2>
+    <p class="sub">Three pieces, all consistent with "thin frontend over views + agent swarm." Turn <code>entity.html</code> from one fixed layout into a composition engine.</p>
+
+    <div class="cards">
+      <div class="fcard">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></div>
+        <h4>1 · Composition engine</h4>
+        <p>A library of section components — hero variants, story block, services grid, gallery, testimonial, events, stats band, map/CTA, lead form. A <strong>theme</strong> = palette + font pairing + which sections, in what order + hero variant. Themes are data (<code>themes.js</code> now → a <code>themes</code> table later), exactly like <code>personas.js</code>.</p>
+      </div>
+      <div class="fcard">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v1a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 9a3 3 0 1 1 0 6"/><path d="M5 9a3 3 0 1 0 0 6"/><path d="M8 21a4 4 0 0 1 8 0"/></svg></div>
+        <h4>2 · Agent-authored content</h4>
+        <p>What makes the samples read as "pro" isn't just CSS — it's real storytelling copy, curated photography, a chosen palette. That's the redesign you did by hand for Hager. The swarm already writes summaries + pulls media; extend it to write long-form section copy, crop a hero, and propose a per-entity palette. <strong>Fixed excellent design + agent-filled richness = bespoke feel at scale.</strong></p>
+      </div>
+      <div class="fcard">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17V5a2 2 0 0 1 2-2h9l5 5v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h5"/></svg></div>
+        <h4>3 · Category → theme mapping</h4>
+        <p>Each entity gets a <code>theme</code> key, auto-assigned by category (gym → "iron," maker/retail → "warm," nonprofit → "civic"), and overridable when claimed. One <code>entity.html</code> reads the entity + its theme and assembles the page. Zero per-entity files.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section class="block" id="render">
+  <div class="wrap">
+    <h2 class="htitle"><span class="num">4</span>Rendering &amp; scale</h2>
+    <p class="sub">Start client-side (fits the no-build frontend), add prerender when SEO on thousands of pages actually matters — reusing infrastructure you already built.</p>
+
+    <div class="compare">
+      <div class="col yes">
+        <h4>Now — client-side themes</h4>
+        <ul>
+          <li>Render Tiers 1–2 from <code>entity_full</code> in the browser</li>
+          <li>Matches the no-build ethos; always fresh; free for all entities</li>
+          <li>Add <code>entities.slug</code> → pretty URLs like <code>/o/coffee-and-sawdust</code></li>
+        </ul>
+      </div>
+      <div class="col no" style="background:#eef7ff;border-color:#cfe4f6">
+        <h4 style="color:#1d6fa5">Later — static prerender (when SEO demands)</h4>
+        <ul>
+          <li>A generator feeds the <em>same views</em> into the themes → static HTML per page</li>
+          <li>Triggered by the <em>same</em> <code>repository_dispatch</code> you built for photo uploads</li>
+          <li>A build step is off-brand for the frontend, but fits the Python/agent + CI half you already run</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:20px"><strong>Tier 3 bespoke</strong> pages are stored as a section-spec JSON (or full custom HTML for true one-offs) in an <code>entity_pages</code> table — versioned, with a <code>published</code> flag — so a Pro page is data too, editable through the future claim flow.</p>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section class="block" id="data">
+  <div class="wrap">
+    <h2 class="htitle"><span class="num">5</span>Data model changes</h2>
+    <p class="sub">Small, additive, and reused everywhere. One expansion of <code>brand</code> fixes both the persona-theming gap and the entity-theme gap.</p>
+
+    <div class="schema">
+      <div class="row">
+        <div><code>entities.slug</code><span class="tag new">new</span></div>
+        <div class="d">Pretty, stable URL segment (<code>/o/&lt;slug&gt;</code>) instead of a raw UUID. SEO + shareable.</div>
+      </div>
+      <div class="row">
+        <div><code>entities.theme</code><span class="tag new">new</span></div>
+        <div class="d">Theme key, auto-assigned by category, overridable on claim. Drives which template renders.</div>
+      </div>
+      <div class="row">
+        <div><code>brand.{bg,surface,ink,font_body}</code><span class="tag ext">extend</span></div>
+        <div class="d">Today brand has primary / accent / font_heading. Themes need background, surface, ink, and a body font to theme <em>fully</em> — same gap as the personas.</div>
+      </div>
+      <div class="row">
+        <div><code>entity_pages</code><span class="tag new">new</span></div>
+        <div class="d"><code>entity_id · tier · theme_key · layout_json · long_copy · custom_html · published · version</code>. Home for Tier 3 bespoke pages, as data.</div>
+      </div>
+      <div class="row">
+        <div><code>themes</code><span class="tag new">later</span></div>
+        <div class="d">Starts as <code>web/themes.js</code> (the seam), graduates to a table when theme definitions want to live in the DB.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section class="block" id="limits">
+  <div class="wrap">
+    <h2 class="htitle"><span class="num">6</span>Honest limits</h2>
+    <p class="sub">So we don't paint into a corner or over-promise.</p>
+    <ul>
+      <li><strong>Bespoke ≠ scalable; themes = scalable.</strong> Don't promise thousands of hand-built pages — promise thousands of <em>themed</em> pages plus hundreds of bespoke Pro ones.</li>
+      <li><strong>Client rendering hurts SEO at volume.</strong> That's the trigger for the prerender step — not a day-one problem.</li>
+      <li><strong><code>brand</code> needs more tokens</strong> before themes can theme fully. Expand it once, reuse it in personas and entity themes alike.</li>
+      <li><strong>Theme quality is a ceiling.</strong> Eight great themes beat forty mediocre ones. Grow the library deliberately, seeded from real Batavia businesses.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────── -->
+<section class="block" id="roadmap">
+  <div class="wrap">
+    <h2 class="htitle"><span class="num">7</span>Where to start</h2>
+    <p class="sub">Smallest-visible-win first; it also builds the vocabulary the bigger work reuses.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><h4>Persona full-theming</h4><span class="eta">~½ day</span></div>
+          <p>Extend <code>personas.js</code> with theme tokens; one <code>applyPersonaTheme()</code>. Immediately visible, self-contained, builds the palette/font vocabulary.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><h4>Extract 2 seed themes</h4><span class="eta">~2–3 days</span></div>
+          <p>Turn River West + Coffee &amp; Sawdust into the composition engine. Wire <code>entity.html</code> to pick a theme by category. Show 3–4 real Batavia entities in each.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><h4>Decide on prerender</h4><span class="eta">after Tier 2 is live</span></div>
+          <p>Once themed pages exist and SEO matters, add the SSG step fed by the same views and triggered by the same dispatch mechanism.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="decide">
+      <h3>Two calls before any code</h3>
+      <div class="fork">
+        <div class="opt">
+          <b>Start point</b>
+          <p>Persona full-theming first (quick, visible) — or straight to the entity theme engine (the bigger prize)?</p>
+        </div>
+        <div class="opt">
+          <b>Seed themes</b>
+          <p>River West (gym/service) + Coffee &amp; Sawdust (retail/maker) + Walder (nonprofit/civic) would cover most of Batavia. Right trio?</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  BataviaIL · internal design plan · <a href="index.html">← directory</a> · <a href="docs.html">system docs</a> · <a href="/internal-logout">sign out</a>
+</footer>
+
+</body>
+</html>
