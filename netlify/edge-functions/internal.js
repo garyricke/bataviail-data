@@ -90,6 +90,7 @@ export const config = {
   path: [
     "/docs.html", "/docs",
     "/plan-landing-pages.html", "/plan-landing-pages",
+    "/status.html", "/status",
     "/internal-auth", "/internal-logout",
   ],
 };
