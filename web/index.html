@@ -404,16 +404,6 @@ load();
 <div id="adm">
   <button id="adm-btn" type="button" aria-label="Admin access" aria-haspopup="dialog" aria-expanded="false">A</button>
 </div>
-<div id="adm-lock" hidden>
-  <div id="adm-lock-box" role="dialog" aria-modal="true" aria-labelledby="adm-lock-title">
-    <img src="icon-192.png" alt="BataviaIL" onerror="this.style.display='none'">
-    <h2 id="adm-lock-title">Admin Access</h2>
-    <p class="adm-lock-sub">Internal area · enter the password to continue.</p>
-    <input id="adm-lock-input" type="password" placeholder="Enter password" autocomplete="current-password">
-    <button id="adm-lock-btn" type="button">Enter</button>
-    <p id="adm-lock-error" role="alert"></p>
-  </div>
-</div>
 <div id="adm-scrim" hidden></div>
 <aside id="adm-panel" role="dialog" aria-modal="true" aria-label="Admin links" aria-hidden="true">
   <div class="adm-panel-head">
@@ -439,36 +429,29 @@ load();
   <div class="adm-panel-foot">
     <button id="adm-lock-out" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-      Lock &amp; sign out
+      Sign out of internal area
     </button>
   </div>
 </aside>
 <script>
 (function(){
-  var KEY='batavia_admin', PASS='batavia26';  // matches INTERNAL_PW (edge gate) — one secret
+  // No client-side password here: the panel only links to destinations that are
+  // already protected (docs + plan gated server-side at the Netlify edge; capture
+  // has its own passcode). Critically, the real INTERNAL_PW value must never live
+  // in this shipped file — Netlify secret scanning (correctly) fails the build.
   var btn=document.getElementById('adm-btn'); if(!btn) return;
-  var lock=document.getElementById('adm-lock'),lockInput=document.getElementById('adm-lock-input'),
-      lockBtn=document.getElementById('adm-lock-btn'),lockBox=document.getElementById('adm-lock-box'),
-      lockErr=document.getElementById('adm-lock-error'),panel=document.getElementById('adm-panel'),
-      scrim=document.getElementById('adm-scrim'),panelClose=document.getElementById('adm-panel-close'),
+  var panel=document.getElementById('adm-panel'),
+      scrim=document.getElementById('adm-scrim'),
+      panelClose=document.getElementById('adm-panel-close'),
       signOut=document.getElementById('adm-lock-out');
-  function authed(){try{return sessionStorage.getItem(KEY)==='1';}catch(e){return false;}}
   function openPanel(){scrim.hidden=false;panel.classList.add('open');panel.setAttribute('aria-hidden','false');btn.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}
   function closePanel(){panel.classList.remove('open');scrim.hidden=true;panel.setAttribute('aria-hidden','true');btn.setAttribute('aria-expanded','false');document.body.style.overflow='';}
-  function openLock(){lock.hidden=false;lockErr.textContent='';lockInput.value='';setTimeout(function(){lockInput.focus();},30);}
-  function closeLock(){lock.hidden=true;}
-  function tryPass(){
-    if(lockInput.value===PASS){try{sessionStorage.setItem(KEY,'1');}catch(e){}closeLock();openPanel();}
-    else{lockErr.textContent='Incorrect password. Try again.';lockBox.classList.remove('adm-shake');void lockBox.offsetWidth;lockBox.classList.add('adm-shake');lockInput.select();}
-  }
-  btn.addEventListener('click',function(e){e.stopPropagation();if(authed())openPanel();else openLock();});
-  lockBtn.addEventListener('click',tryPass);
-  lockInput.addEventListener('keydown',function(e){if(e.key==='Enter')tryPass();});
+  btn.addEventListener('click',function(e){e.stopPropagation();openPanel();});
   panelClose.addEventListener('click',closePanel);
   scrim.addEventListener('click',closePanel);
-  signOut.addEventListener('click',function(){try{sessionStorage.removeItem(KEY);}catch(e){}closePanel();});
-  lock.addEventListener('click',function(e){if(e.target===lock)closeLock();});
-  document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(!lock.hidden)closeLock();else if(panel.classList.contains('open'))closePanel();});
+  // Sign out of the internal area: clear the edge auth cookie, stay on the page.
+  signOut.addEventListener('click',function(){try{fetch('/internal-logout',{credentials:'same-origin'}).catch(function(){});}catch(e){}closePanel();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel.classList.contains('open'))closePanel();});
 })();
 </script>
 </body>
