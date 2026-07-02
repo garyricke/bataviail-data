@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import re
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import psycopg
 from dotenv import load_dotenv
@@ -45,6 +46,17 @@ def _valid_date(d):
         return datetime.strptime(str(d).strip(), "%Y-%m-%d").strftime("%Y-%m-%d")
     except ValueError:
         return None
+
+
+def _local_ts(date, time):
+    """Scraped event times are Batavia wall-clock. Return a tz-aware datetime
+    (America/Chicago, DST-correct) so timestamptz stores the true instant —
+    a naive string would get stamped with the session's UTC and shift every
+    rendered time by 5-6 hours."""
+    if not date:
+        return None
+    return datetime.fromisoformat(f"{date}T{time or '00:00'}:00").replace(
+        tzinfo=ZoneInfo("America/Chicago"))
 
 
 def connect():
@@ -155,7 +167,7 @@ def apply_update(update) -> str:
                     continue
                 date = _valid_date(ev.get("date"))
                 time = _valid_time(ev.get("time"))
-                starts_at = f"{date}T{time or '00:00'}:00" if date else None
+                starts_at = _local_ts(date, time)
                 dedup = _re.sub(r"\s+", " ", title.lower()).strip() + "|" + (date or "")
                 cur.execute(
                     """insert into entity_events
@@ -219,7 +231,7 @@ def apply_events(entity_id, events, model) -> int:
                 continue
             date = _valid_date(ev.get("date"))
             time = _valid_time(ev.get("time"))
-            starts_at = f"{date}T{time or '00:00'}:00" if date else None
+            starts_at = _local_ts(date, time)
             dedup = re.sub(r"\s+", " ", title.lower()).strip() + "|" + (date or "")
             cur.execute(
                 """insert into entity_events

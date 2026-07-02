@@ -199,6 +199,7 @@
   .pev p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.55}
   .pev .meta{margin-top:8px;font:600 12px/1 var(--fb);letter-spacing:.06em;color:var(--accent2)}
   .pevents-foot{margin-top:18px}
+  body[data-page] .gallery{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
   body[data-page] .topbar a{background:rgba(0,0,0,.34)}
   body[data-page] .topbar.solid a{background:var(--tint);color:var(--ink)}
   @media(max-width:760px){.psplit,.pvisit{grid-template-columns:1fr;gap:26px}.psplit.rev figure{order:0}}
@@ -381,7 +382,9 @@ const SECTIONS={
     return sec("Products & Services",body);
   },
   events(e,t){
-    const ev=(e.events||[]).map(x=>{const f=evd(x.starts_at);const meta=[f.m,x.location,x.price].filter(Boolean).map(esc).join(" · ");
+    const ev=(e.events||[]).map(x=>{const f=evd(x.starts_at);
+      const price=x.price&&!/unknown|n\/a|tbd/i.test(x.price)?x.price:"";
+      const meta=[f.m,x.location,price].filter(Boolean).map(esc).join(" · ");
       return `<div class="ev"><div class="date">${f.d}</div><div><div class="t">${esc(x.title)}</div>${x.description?`<div class="m">${esc(x.description)}</div>`:""}${meta?`<div class="m">${meta}</div>`:""}</div></div>`}).join("");
     return ev?sec("Upcoming Events",ev):"";
   },
@@ -479,7 +482,8 @@ const BLOCKS={
     const cards=list.map(x=>{
       const dt=new Date(x.starts_at), f=evd(x.starts_at);
       const when=`${DAYS[dt.getDay()]}, ${MON[dt.getMonth()]} ${dt.getDate()}`+(f.m?` · ${f.m}`:"");
-      const meta=[x.price&&x.price!=="Free"?x.price:"",x.url?"Tickets available":""].filter(Boolean).join(" · ");
+      const okPrice=x.price&&x.price!=="Free"&&!/unknown|n\/a|tbd/i.test(x.price);
+      const meta=[okPrice?x.price:"",x.url?"Tickets available":""].filter(Boolean).join(" · ");
       return `<div class="pev"><p class="d">${esc(when)}</p><b>${esc(x.title)}</b>
         ${x.description?`<p>${esc(x.description)}</p>`:""}${meta?`<div class="meta">${esc(meta)}</div>`:""}</div>`;
     }).join("");
@@ -544,7 +548,7 @@ function render(e,key,page){
   addEventListener("scroll",()=>tb.classList.toggle("solid",scrollY>window.innerHeight*0.45));
 
   // staggered section reveals
-  const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add("in");io.unobserve(x.target)}}),{threshold:.08});
+  const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add("in");io.unobserve(x.target)}}),{rootMargin:"140px 0px",threshold:0});
   document.querySelectorAll("section.sec").forEach(s=>io.observe(s));
 
   if(params.get("demo")!=="0")demoBar(key);
