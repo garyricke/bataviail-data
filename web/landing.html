@@ -216,6 +216,13 @@
   .vcard{flex:0 0 234px;scroll-snap-align:start}
   .vcard video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:16px;background:#101010;display:block;box-shadow:0 10px 26px rgba(20,18,12,.18)}
   .vcard p{font:600 14px/1.4 var(--fb);margin:9px 2px 0;color:var(--ink)}
+  .vmedia{position:relative}
+  .vplay{position:absolute;inset:0;margin:auto;width:64px;height:64px;border-radius:50%;border:0;cursor:pointer;
+    background:rgba(255,255,255,.93);color:#1c1a16;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 22px rgba(0,0,0,.38);transition:.2s;z-index:2}
+  .vplay svg{width:24px;height:24px;fill:currentColor;margin-left:3px}
+  .vplay:hover{background:var(--ab);transform:scale(1.07)}
+  .vmedia.playing .vplay{opacity:0;pointer-events:none}
   .vnav{position:absolute;top:44%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid var(--line);
     background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer;z-index:3;box-shadow:0 4px 14px rgba(20,18,12,.18)}
   .vnav.prev{left:-10px}.vnav.next{right:-10px}
@@ -549,8 +556,9 @@ const BLOCKS={
   },
   videos(b){ // horizontal story-reel carousel; videos lazy (preload=none), posters carry the load
     const items=(b.items||[]);if(!items.length)return"";
-    const cards=items.map(v=>`<div class="vcard">
-        <video preload="none" playsinline controls poster="${esc(v.poster||"")}" src="${esc(v.src)}"></video>
+    const cards=items.map(v=>`<div class="vcard"><div class="vmedia">
+        <video preload="none" playsinline poster="${esc(v.poster||"")}" src="${esc(v.src)}"></video>
+        <button class="vplay" aria-label="Play ${esc(v.title||"video")}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button></div>
         <p>${esc(v.title||"")}</p></div>`).join("");
     return sec("",`${kick(b.kicker)}${b.heading?`<h3 class="ph3">${esc(b.heading)}</h3>`:""}
       <div class="vwrap"><button class="vnav prev" aria-label="Scroll back">‹</button>
@@ -623,10 +631,15 @@ function render(e,key,page){
     w.querySelector(".prev").addEventListener("click",()=>t.scrollBy({left:-510,behavior:"smooth"}));
     w.querySelector(".next").addEventListener("click",()=>t.scrollBy({left:510,behavior:"smooth"}));
   });
-  document.querySelectorAll(".vcard video").forEach(v=>v.addEventListener("play",()=>{
-    document.querySelectorAll(".vcard video").forEach(o=>{if(o!==v)o.pause()});
-    window.logInteraction&&window.logInteraction("video_play",{entity_id:id,video:(v.currentSrc||"").split("/").pop()});
-  }));
+  document.querySelectorAll(".vmedia").forEach(m=>{
+    const v=m.querySelector("video"), b=m.querySelector(".vplay");
+    b.addEventListener("click",()=>{v.setAttribute("controls","");v.play();});
+    v.addEventListener("play",()=>{m.classList.add("playing");
+      document.querySelectorAll(".vcard video").forEach(o=>{if(o!==v)o.pause()});
+      window.logInteraction&&window.logInteraction("video_play",{entity_id:id,video:(v.currentSrc||"").split("/").pop()});});
+    v.addEventListener("pause",()=>m.classList.remove("playing"));
+    v.addEventListener("ended",()=>{m.classList.remove("playing");v.removeAttribute("controls");});
+  });
 
   if(params.get("demo")!=="0")demoBar(key);
   window.logInteraction&&window.logInteraction("landing_view",{entity_id:id,theme:key});
