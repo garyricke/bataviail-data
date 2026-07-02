@@ -65,6 +65,25 @@
   .stat b{display:block;font-size:22px;color:var(--p)}.stat span{font-size:12px;color:var(--gray)}
   #status{padding:14px 16px;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--gray)}
 
+  /* featured Pro pages — big photo showcases linking straight to bespoke */
+  .featured{margin:0 0 32px}
+  .feat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px}
+  .feat-card{position:relative;border-radius:18px;overflow:hidden;min-height:300px;display:flex;align-items:flex-end;
+    text-decoration:none;color:#fff;box-shadow:0 12px 32px rgba(20,24,48,.18);transition:transform .16s ease,box-shadow .16s ease}
+  .feat-card:hover{transform:translateY(-4px);box-shadow:0 20px 46px rgba(20,24,48,.28)}
+  .feat-card .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+  .feat-card:hover .bg{transform:scale(1.045)}
+  .feat-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,12,24,.04) 34%,rgba(10,12,24,.8) 100%)}
+  .feat-card .fc{position:relative;z-index:2;padding:22px 24px}
+  .feat-badge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;letter-spacing:.13em;
+    text-transform:uppercase;background:rgba(255,255,255,.94);color:var(--navy);padding:5px 11px;border-radius:999px}
+  .feat-badge svg{width:12px;height:12px}
+  .feat-card h3{margin:12px 0 5px;font-size:1.55rem;line-height:1.1;text-shadow:0 2px 14px rgba(0,0,0,.35)}
+  .feat-card p{margin:0;font-size:.93rem;line-height:1.5;color:rgba(255,255,255,.86);max-width:56ch}
+  .feat-card .go{margin-top:11px;display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:700;color:#fff}
+  .feat-card .go svg{width:15px;height:15px;transition:transform .16s}
+  .feat-card:hover .go svg{transform:translateX(3px)}
+
   /* upcoming events strip */
   .events{margin:0 0 30px}
   .events-h{display:flex;align-items:center;gap:9px;font-size:19px;color:var(--p);margin:0 0 14px}
@@ -199,6 +218,15 @@
   <main>
     <div id="status">Loading agent-collected data…</div>
     <div class="stats" id="stats"></div>
+    <section class="featured hide" id="featured">
+      <h2 class="events-h">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Featured Batavia
+      </h2>
+      <div class="feat-row" id="feat-row"></div>
+    </section>
     <section class="events hide" id="events">
       <h2 class="events-h">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -241,14 +269,20 @@ const evfmt=s=>{ if(!s) return {d:"Date TBD",m:""}; const dt=new Date(s); if(isN
   return {d:`${DAYS[dt.getDay()]}, ${MON[dt.getMonth()]} ${dt.getDate()}`, m:hasTime?dt.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):""}; };
 
 let ALL=[], CURRENT=null;   // CURRENT: persona key, 'all', or null (chooser)
+let FEATURED=new Set();     // entity_ids with a published Tier-3 Pro page
 
 async function load(){
   const sel="id,name,membership_level,summary,categories,services,events,brand,hero,media,location,logo_url";
   const url=`${SUPABASE_URL}/rest/v1/entity_full?or=(last_verified_by.like.claude*,hero.not.is.null,logo_url.like.*cloudinary*)&select=${sel}&order=name`;
   try{
-    const r=await fetch(url,{headers:{apikey:ANON_KEY,Authorization:"Bearer "+ANON_KEY}});
+    const H={apikey:ANON_KEY,Authorization:"Bearer "+ANON_KEY};
+    const [r,rp]=await Promise.all([
+      fetch(url,{headers:H}),
+      fetch(`${SUPABASE_URL}/rest/v1/entity_pages?published=is.true&select=entity_id`,{headers:H}),
+    ]);
     if(!r.ok) throw new Error(`HTTP ${r.status} — ${await r.text()}`);
     ALL=await r.json();
+    try{ FEATURED=new Set((await rp.json()).map(x=>x.entity_id)); }catch(_){}
   }catch(e){
     document.getElementById("status").innerHTML=`Could not load: ${esc(e.message)}<br><br>If file://, serve it: <code>cd web &amp;&amp; python3 -m http.server 8000</code>`;
     return;
@@ -363,9 +397,31 @@ function renderDirectory(){
     <div class="stat"><b>${items.length}</b><span>${p?'places for you':'organizations'}</span></div>
     <div class="stat"><b>${tot.ev}</b><span>upcoming events</span></div>
     <div class="stat"><b>${tot.svc}</b><span>services</span></div>`;
+  renderFeatured();
   renderEvents(items);
   document.getElementById("grid-h").textContent = p ? `Recommended for ${p.label}` : "All organizations";
   renderGrid(items);
+}
+
+/* Featured band: entities with a published Pro page, linking straight to it. */
+function renderFeatured(){
+  const sec=document.getElementById("featured");
+  const feats=ALL.filter(e=>FEATURED.has(e.id));
+  if(!feats.length){ sec.classList.add("hide"); return; }
+  document.getElementById("feat-row").innerHTML=feats.map(e=>{
+    const teaser=e.summary?esc(e.summary.length>150?e.summary.slice(0,150).replace(/\s+\S*$/,"")+"…":e.summary):"";
+    const cat=(e.categories||[])[0]||"";
+    return `<a class="feat-card" href="landing.html?id=${e.id}&theme=bespoke" data-id="${e.id}">
+      ${e.hero&&e.hero.url?`<img class="bg" src="${esc(e.hero.url)}" alt="" loading="lazy">`:""}
+      <div class="fc">
+        <span class="feat-badge"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Featured · Pro Page</span>
+        <h3>${esc(e.name)}</h3>
+        ${teaser?`<p>${teaser}</p>`:""}
+        <span class="go">${cat?esc(cat)+" · ":""}Visit their page
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </div></a>`;
+  }).join("");
+  sec.classList.remove("hide");
 }
 
 function renderEvents(items){
@@ -415,8 +471,9 @@ function renderGrid(items){
 }
 // Log org opens (event delegation on the directory).
 document.getElementById("screen-dir").addEventListener("click",e=>{
-  const a=e.target.closest(".card[data-id], .evt[data-id]"); if(!a) return;
-  window.logInteraction("org_clicked", {id:a.dataset.id, persona:CURRENT, from:a.classList.contains("evt")?"event":"card"});
+  const a=e.target.closest(".card[data-id], .evt[data-id], .feat-card[data-id]"); if(!a) return;
+  const from=a.classList.contains("feat-card")?"featured":a.classList.contains("evt")?"event":"card";
+  window.logInteraction("org_clicked", {id:a.dataset.id, persona:CURRENT, from});
 });
 
 load();
