@@ -65,7 +65,17 @@
         "heading": "Food trucks, pours & river nights",
         "limit": 6,
         "moreHref": "https://www.sturdyshelterbrewing.com/calendar",
-        "moreLabel": "Full calendar ↗"
+        "moreLabel": "Full calendar ↗",
+        "imageRules": [
+          { "match": ["breakfast", "brunch", "pancake"], "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_900/v1783023612/bataviail/stock/events/breakfast.jpg" },
+          { "match": ["sandwich", "cheeseburger", "burger", "food truck", "pizza", "taco", "bbq", "grill", "kitchen"], "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_900/v1783023610/bataviail/stock/events/sandwich.jpg" },
+          { "match": ["bingo"], "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_900/v1783023610/bataviail/stock/events/bingo.jpg" },
+          { "match": ["chess", "game night", "trivia", "cards"], "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_900/v1783023612/bataviail/stock/events/chess.jpg" },
+          { "match": ["4th of july", "fourth of july", "holiday", "memorial", "veterans", "labor day"], "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_900/v1783023613/bataviail/stock/events/holiday.jpg" },
+          { "match": ["music", "band", "acoustic", "concert", "open mic", "live"], "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_900/v1783023614/bataviail/stock/events/live-music.jpg" },
+          { "match": ["kolsch", "lager", "ipa", "stout", "beer", "pour", "tap", "release", "pint", "plants"], "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_900/v1783023609/bataviail/stock/events/beer.jpg" }
+        ],
+        "imageDefault": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_900/v1783023609/bataviail/stock/events/beer.jpg"
       },
       {
         "type": "split",

@@ -187,7 +187,7 @@ def fetch_pending():
     with connect() as c, c.cursor() as cur:
         cur.execute(
             "select id, entity_id, entity_name, storage_path, gps_lat, gps_lng "
-            "from photo_uploads where status='pending' order by created_at"
+            "from photo_uploads where status='pending' and kind='place' order by created_at"
         )
         return cur.fetchall()
 
