@@ -117,9 +117,12 @@
         "type": "team",
         "kicker": ["the", "PEOPLE"],
         "people": [
-          { "name": "Frank Mercadante", "role": "Owner & Head Brewer" },
-          { "name": "Diane Mercadante", "role": "Owner" },
-          { "name": "Oliver Bulley", "role": "General Manager & Brewer" }
+          { "name": "Frank Mercadante", "role": "Owner & Head Brewer",
+            "photo": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_thumb,g_face,w_600,h_600,f_auto,q_auto/v1783022845/bataviail/pages/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/team-frank.jpg" },
+          { "name": "Diane Mercadante", "role": "Owner",
+            "photo": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_thumb,g_face,w_600,h_600,f_auto,q_auto/v1783022847/bataviail/pages/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/team-diane.jpg" },
+          { "name": "Oliver Bulley", "role": "General Manager & Brewer",
+            "photo": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_thumb,g_face,w_600,h_600,f_auto,q_auto/v1783022850/bataviail/pages/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/team-oliver.jpg" }
         ]
       },
       {

@@ -183,6 +183,8 @@
   .pteam{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:18px}
   .pcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 22px;text-align:center}
   .pcard .mono{width:56px;height:56px;border-radius:50%;background:var(--ab);color:#242323;font:700 22px/56px var(--fa,var(--fd));margin:0 auto 14px}
+  .pcard .face{width:116px;height:116px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 16px;
+    border:3px solid var(--ab);box-shadow:0 8px 22px rgba(36,35,35,.18)}
   .pcard b{display:block;font-size:16.5px}
   .pcard span{font-size:13px;color:var(--muted);letter-spacing:.04em}
 
@@ -467,7 +469,10 @@ const BLOCKS={
   },
   team(b){
     const ppl=(b.people||[]);if(!ppl.length)return"";
-    const cards=ppl.map(p=>`<div class="pcard"><div class="mono">${esc((p.name||"?")[0])}</div><b>${esc(p.name)}</b><span>${esc(p.role||"")}</span></div>`).join("");
+    const cards=ppl.map(p=>{
+      const face=p.photo?`<img class="face" src="${esc(p.photo)}" alt="${esc(p.name||"")}" loading="lazy">`
+                        :`<div class="mono">${esc((p.name||"?")[0])}</div>`;
+      return `<div class="pcard">${face}<b>${esc(p.name)}</b><span>${esc(p.role||"")}</span></div>`}).join("");
     return sec("",`${kick(b.kicker)}<div class="pteam">${cards}</div>`);
   },
   gallery(b){
