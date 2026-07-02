@@ -88,10 +88,14 @@
   .hero{position:relative;aspect-ratio:16/10;background:#eef0f5;overflow:hidden;border-radius:13px 13px 0 0}
   .hero img{width:100%;height:100%;object-fit:cover;display:block}
   .hero.noimg{background:linear-gradient(120deg,var(--b,#292F7B),var(--a,#00ADEF))}
+  .hero.logohero{display:flex;align-items:center;justify-content:center;padding:20px}
+  .hero-logo{max-width:76%;max-height:74%;object-fit:contain;background:#fff;border-radius:12px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,.16)}
   .hero-badge{position:absolute;left:10px;bottom:10px;font-size:10px;font-weight:700;letter-spacing:.4px;color:#fff;padding:3px 9px;border-radius:999px}
   .hero-badge.enhanced{background:rgba(41,47,123,.88)}.hero-badge.generated{background:rgba(60,64,82,.82)}.hero-badge.community{background:rgba(46,125,50,.9)}
   .hero .count{position:absolute;right:10px;bottom:10px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:999px}
-  .card h2{margin:14px 16px 0;font-size:18px;color:var(--bname,var(--navy));font-family:var(--bfont,inherit);line-height:1.2}
+  .card-head{display:flex;align-items:center;gap:11px;margin:14px 16px 0}
+  .clogo{width:40px;height:40px;flex:none;border-radius:9px;object-fit:contain;background:#fff;border:1px solid var(--line);padding:3px}
+  .card h2{margin:0;font-size:18px;color:var(--bname,var(--navy));font-family:var(--bfont,inherit);line-height:1.2}
   .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:7px 16px 0}
   .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--btint,#eef0fa);color:var(--bname,var(--navy))}
   .cat{font-size:12px;color:var(--gray)}
@@ -239,8 +243,8 @@ const evfmt=s=>{ if(!s) return {d:"Date TBD",m:""}; const dt=new Date(s); if(isN
 let ALL=[], CURRENT=null;   // CURRENT: persona key, 'all', or null (chooser)
 
 async function load(){
-  const sel="id,name,membership_level,summary,categories,services,events,brand,hero,media,location";
-  const url=`${SUPABASE_URL}/rest/v1/entity_full?or=(last_verified_by.like.claude*,hero.not.is.null)&select=${sel}&order=name`;
+  const sel="id,name,membership_level,summary,categories,services,events,brand,hero,media,location,logo_url";
+  const url=`${SUPABASE_URL}/rest/v1/entity_full?or=(last_verified_by.like.claude*,hero.not.is.null,logo_url.like.*cloudinary*)&select=${sel}&order=name`;
   try{
     const r=await fetch(url,{headers:{apikey:ANON_KEY,Authorization:"Bearer "+ANON_KEY}});
     if(!r.ok) throw new Error(`HTTP ${r.status} — ${await r.text()}`);
@@ -376,15 +380,19 @@ function renderGrid(items){
     const ac=/^#[0-9a-f]{6}$/i.test(b.accent)?b.accent:"#00ADEF";
     const vars=`--b:${pc};--a:${ac};--bname:${readable(pc)};--btint:${pc}14`+(b.font_heading?`;--bfont:'${esc(b.font_heading)}',Georgia,serif`:"");
     const extra=(e.media&&e.media.length>1)?`<span class="count">+${e.media.length-1}</span>`:"";
-    const hero=e.hero&&e.hero.url
+    const logo=e.logo_url&&/res\.cloudinary\.com/i.test(e.logo_url)?e.logo_url:"";
+    const hasImg=!!(e.hero&&e.hero.url);
+    const hero=hasImg
       ?`<div class="hero"><img src="${esc(e.hero.url)}" alt="" loading="lazy">${hbadge?`<span class="hero-badge ${hk}">${hbadge}</span>`:""}${extra}</div>`
-      :`<div class="hero noimg"></div>`;
+      :logo
+        ?`<div class="hero noimg logohero"><img class="hero-logo" src="${esc(logo)}" alt="" loading="lazy"></div>`
+        :`<div class="hero noimg"></div>`;
     const cat=(e.categories||[])[0]||"";
     const addr=e.location&&e.location.address?[e.location.address,e.location.city].filter(Boolean).join(", "):"";
     const teaser=e.summary?esc(e.summary.length>118?e.summary.slice(0,118).replace(/\s+\S*$/,"")+"…":e.summary):"";
     return `<a class="card" style="${vars}" href="entity.html?id=${e.id}" data-id="${e.id}">
       ${hero}
-      <h2>${esc(e.name)}</h2>
+      <div class="card-head">${(logo&&hasImg)?`<img class="clogo" src="${esc(logo)}" alt="" loading="lazy">`:""}<h2>${esc(e.name)}</h2></div>
       <div class="meta">${(e.membership_level&&e.membership_level!=='Unknown')?`<span class="badge">${esc(e.membership_level)}</span>`:""}${cat?`<span class="cat">${esc(cat)}</span>`:""}</div>
       ${addr?`<div class="addr">${esc(addr)}</div>`:""}
       ${teaser?`<p class="teaser">${teaser}</p>`:""}

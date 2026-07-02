@@ -20,6 +20,7 @@
   .hero .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
   .hero::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.08) 30%,rgba(0,0,0,.55) 100%)}
   .hero .inner{position:relative;z-index:2;max-width:880px;margin:0 auto;width:100%;padding:0 24px 34px;color:#fff}
+  .elogo{width:66px;height:66px;border-radius:14px;background:#fff;padding:7px;object-fit:contain;box-shadow:0 6px 20px rgba(0,0,0,.28);margin-bottom:14px;display:block}
   .hero h1{margin:0 0 8px;font-size:clamp(30px,5vw,48px);line-height:1.08;font-family:var(--bfont);letter-spacing:-.5px;text-shadow:0 2px 18px rgba(0,0,0,.4)}
   .hero .tags{display:flex;gap:8px;flex-wrap:wrap}
   .tag{font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px;background:rgba(255,255,255,.92);color:#222}
@@ -75,7 +76,7 @@ if(!id){document.getElementById("page").innerHTML="<p style='padding:40px'>No en
 else load();
 
 async function load(){
-  const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,hero,media,location,verification_status";
+  const sel="name,membership_level,website,summary,categories,services,hours,social,contacts,events,brand,hero,media,location,verification_status,logo_url";
   let e;
   try{
     const r=await fetch(`${SUPABASE_URL}/rest/v1/entity_full?id=eq.${id}&select=${sel}`,{headers:{apikey:ANON_KEY,Authorization:"Bearer "+ANON_KEY}});
@@ -101,9 +102,11 @@ function render(e){
   const tags=`<div class="tags">${e.membership_level&&e.membership_level!=='Unknown'?`<span class="tag brand">${esc(e.membership_level)}</span>`:""}${(e.categories||[]).slice(0,3).map(c=>`<span class="tag">${esc(c)}</span>`).join("")}</div>`;
   const media=(e.media&&e.media.length>1)?e.media:[];
   const thumbs=media.length?`<div class="thumbs">${media.map((m,i)=>`<img class="thumb${i===0?' active':''}" src="${esc(m.url)}" data-url="${esc(m.url)}">`).join("")}</div>`:"";
+  const logo=e.logo_url&&/res\.cloudinary\.com/i.test(e.logo_url)?e.logo_url:"";
+  const logoTag=logo?`<img class="elogo" src="${esc(logo)}" alt="">`:"";
   const hero = heroUrl
-    ? `<div class="hero" id="hero"><img class="hero-bg" id="hero-bg" src="${esc(heroUrl)}" alt="">${thumbs}<div class="inner"><h1>${esc(e.name)}</h1>${tags}</div></div>`
-    : `<div class="hero nobrand-hero"><div class="inner"><h1>${esc(e.name)}</h1>${tags}</div></div>`;
+    ? `<div class="hero" id="hero"><img class="hero-bg" id="hero-bg" src="${esc(heroUrl)}" alt="">${thumbs}<div class="inner">${logoTag}<h1>${esc(e.name)}</h1>${tags}</div></div>`
+    : `<div class="hero nobrand-hero"><div class="inner">${logoTag}<h1>${esc(e.name)}</h1>${tags}</div></div>`;
 
   const services=(e.services||[]).map(s=>`<span class="chip">${esc(s)}</span>`).join("");
   const events=(e.events||[]).map(x=>{const f=evd(x.starts_at);const meta=[f.m,x.location,x.price].filter(Boolean).map(esc).join(" · ");
