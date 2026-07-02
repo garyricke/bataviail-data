@@ -336,8 +336,22 @@ function selectPersona(key, opt){
 }
 
 /* ── Screen 2 render ──────────────────────────────────────────────────────── */
+// Count real on-location ("community") photos on an entity — hero + gallery.
+function communityShots(e){
+  let n=(e.media||[]).reduce((s,m)=>s+(m&&m.kind==='community'?1:0),0);
+  if(!n && e.hero && e.hero.kind==='community') n=1;   // hero-only, not in media
+  return n;
+}
 function currentItems(){
-  return (CURRENT && CURRENT!=="all") ? window.rankForPersona(CURRENT, ALL) : ALL.slice();
+  if(CURRENT && CURRENT!=="all") return window.rankForPersona(CURRENT, ALL);
+  // Everything view: entities with REAL photos taken on-location first
+  // (most shots first), then everyone else alphabetically.
+  return ALL.slice().sort((a,b)=>{
+    const ca=communityShots(a), cb=communityShots(b);
+    if((cb>0)!==(ca>0)) return (cb>0?1:0)-(ca>0?1:0);   // any real photo → top
+    if(cb!==ca) return cb-ca;                            // more real photos → higher
+    return a.name.localeCompare(b.name);
+  });
 }
 
 function renderDirectory(){
