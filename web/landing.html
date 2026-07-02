@@ -210,6 +210,17 @@
   .pev.haspic p{color:rgba(255,255,255,.78)}
   .pev.haspic .meta{color:rgba(255,255,255,.9)}
   .pevents-foot{margin-top:18px}
+  /* video story carousel (Tier-3 "ultimate" block) */
+  .vwrap{position:relative;margin-top:20px}
+  .vtrack{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 12px;scrollbar-width:thin}
+  .vcard{flex:0 0 234px;scroll-snap-align:start}
+  .vcard video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:16px;background:#101010;display:block;box-shadow:0 10px 26px rgba(20,18,12,.18)}
+  .vcard p{font:600 14px/1.4 var(--fb);margin:9px 2px 0;color:var(--ink)}
+  .vnav{position:absolute;top:44%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer;z-index:3;box-shadow:0 4px 14px rgba(20,18,12,.18)}
+  .vnav.prev{left:-10px}.vnav.next{right:-10px}
+  .vnav:hover{background:var(--accent);color:var(--btn-ink,#fff)}
+  @media(max-width:700px){.vnav{display:none}}
   .socials{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
   .socialbtn{width:54px;height:54px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
     background:var(--tint);color:var(--accent);border:1px solid var(--lineA);transition:.2s}
@@ -536,6 +547,15 @@ const BLOCKS={
     const more=b.moreHref?`<div class="btns pevents-foot"><a class="btn ghost" href="${esc(b.moreHref)}" target="_blank" rel="noopener">${esc(b.moreLabel||"Full calendar ↗")}</a></div>`:"";
     return sec("",`${kick(b.kicker)}${b.heading?`<h3 class="ph3">${esc(b.heading)}</h3>`:""}<div class="pevents">${cards}</div>${more}`);
   },
+  videos(b){ // horizontal story-reel carousel; videos lazy (preload=none), posters carry the load
+    const items=(b.items||[]);if(!items.length)return"";
+    const cards=items.map(v=>`<div class="vcard">
+        <video preload="none" playsinline controls poster="${esc(v.poster||"")}" src="${esc(v.src)}"></video>
+        <p>${esc(v.title||"")}</p></div>`).join("");
+    return sec("",`${kick(b.kicker)}${b.heading?`<h3 class="ph3">${esc(b.heading)}</h3>`:""}
+      <div class="vwrap"><button class="vnav prev" aria-label="Scroll back">‹</button>
+      <div class="vtrack">${cards}</div><button class="vnav next" aria-label="Scroll forward">›</button></div>`);
+  },
   visit(b,e){
     const loc=locLine(e), tel=((e.contacts||[]).find(c=>c.phone)||{}).phone;
     const hours=(e.hours||[]).slice().sort((x,y)=>x.day_of_week-y.day_of_week)
@@ -596,6 +616,17 @@ function render(e,key,page){
   // staggered section reveals
   const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add("in");io.unobserve(x.target)}}),{rootMargin:"140px 0px",threshold:0});
   document.querySelectorAll("section.sec").forEach(s=>io.observe(s));
+
+  // video carousel: arrow nav + only one video playing at a time
+  document.querySelectorAll(".vwrap").forEach(w=>{
+    const t=w.querySelector(".vtrack");
+    w.querySelector(".prev").addEventListener("click",()=>t.scrollBy({left:-510,behavior:"smooth"}));
+    w.querySelector(".next").addEventListener("click",()=>t.scrollBy({left:510,behavior:"smooth"}));
+  });
+  document.querySelectorAll(".vcard video").forEach(v=>v.addEventListener("play",()=>{
+    document.querySelectorAll(".vcard video").forEach(o=>{if(o!==v)o.pause()});
+    window.logInteraction&&window.logInteraction("video_play",{entity_id:id,video:(v.currentSrc||"").split("/").pop()});
+  }));
 
   if(params.get("demo")!=="0")demoBar(key);
   window.logInteraction&&window.logInteraction("landing_view",{entity_id:id,theme:key});

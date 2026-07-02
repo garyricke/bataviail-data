@@ -1,0 +1,234 @@
+{
+  "entity_id": "4cbc77b9-3054-4976-8573-7a7da4044200",
+  "entity_name": "Batavia Interfaith Food Pantry and Clothes Closet",
+  "version": 1,
+  "tier": 3,
+  "theme_key": "bespoke",
+  "published": true,
+  "notes": "Second Tier-3 pilot — deliberately opposite of Sturdy Shelter: light, hopeful, humanist. Palette from their red windmill identity; Bricolage Grotesque display + Caveat handwritten accent + Lato body (their site font). Copy original, from bataviafoodpantry.org (about/get-help, researched 2026-07). Photos are theirs, rehosted on Cloudinary. Videos: 12 vertical story reels shot for bataviail.co/foodpantry, rehosted from Vimeo to Cloudinary (signed URLs expire).",
+  "layout_json": {
+    "brand": {
+      "bg": "#fdfbf6",
+      "surface": "#ffffff",
+      "ink": "#2b2723",
+      "muted": "#6f6862",
+      "line": "#ece5d8",
+      "accent": "#b3372e",
+      "accentBright": "#fcb900",
+      "accent2": "#3e7d4e",
+      "fontDisplay": "Bricolage Grotesque",
+      "fontAccent": "Caveat",
+      "fontBody": "Lato",
+      "headingWeight": "800",
+      "headingTracking": "-.01em",
+      "google": [
+        "Bricolage+Grotesque:wght@500;700;800",
+        "Caveat:wght@600",
+        "Lato:wght@400;700"
+      ]
+    },
+    "blocks": [
+      {
+        "type": "hero",
+        "eyebrow": "Neighbors serving neighbors since 1981",
+        "title": "Batavia Interfaith Food Pantry",
+        "tagline": "Food, clothing, and dignity for every neighbor in Batavia and Batavia Township — free, welcoming, and powered by this community.",
+        "image": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783025715/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/volunteers.jpg",
+        "ctas": [
+          {
+            "label": "Get help",
+            "href": "https://bataviafoodpantry.org/get-help/",
+            "primary": true
+          },
+          {
+            "label": "Donate",
+            "href": "https://bataviafoodpantry.org/donate/"
+          },
+          {
+            "label": "Volunteer",
+            "href": "https://bataviafoodpantry.org/volunteer/"
+          }
+        ]
+      },
+      {
+        "type": "facts",
+        "items": [
+          {
+            "n": "1981",
+            "l": "Founded by Batavia congregations"
+          },
+          {
+            "n": "900+",
+            "l": "Families served monthly"
+          },
+          {
+            "n": "14,000",
+            "l": "Sq ft — new permanent home"
+          },
+          {
+            "n": "4",
+            "l": "Shopping days a week"
+          }
+        ]
+      },
+      {
+        "type": "story",
+        "kicker": [
+          "our",
+          "STORY"
+        ],
+        "heading": "From church basements to 916 First Street",
+        "image": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783025716/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/building-916-first.png",
+        "caption": "The permanent home — opened October 2025",
+        "body": [
+          "The pantry was born in a recession. In November 1981, after Batavia churches kept fielding the same request — help putting food on the table — the local Ministerial Association pulled congregations together around one shared cupboard. Interfaith wasn't a slogan; it was the founding mechanics.",
+          "For four decades the operation grew the way Batavia things do: a donated storage building on Flinn Street, renovations by local businesses, a delivery van funded through the Lions Club, and — in 2007 — a switch to the Client Choice model, so neighbors shop for what their families actually eat instead of taking home a pre-packed bag.",
+          "In October 2025 the pantry finally got a permanent home at 916 First Street: fourteen thousand square feet, triple the old space, funded by a $3 million community grant secured with help from Congresswoman Lauren Underwood. Same mission, much bigger table."
+        ]
+      },
+      {
+        "type": "videos",
+        "kicker": [
+          "short",
+          "STORIES"
+        ],
+        "heading": "Twelve little films from the pantry floor",
+        "items": [
+          {
+            "title": "Why is she the best?",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025534/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/why-is-she-the-best.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025534/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/why-is-she-the-best.jpg"
+          },
+          {
+            "title": "What People Don't Know",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025550/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/what-people-don-t-know.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025550/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/what-people-don-t-know.jpg"
+          },
+          {
+            "title": "The most important thing",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025565/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/the-most-important-thing.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025565/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/the-most-important-thing.jpg"
+          },
+          {
+            "title": "How to volunteer",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025579/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/how-to-volunteer.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025579/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/how-to-volunteer.jpg"
+          },
+          {
+            "title": "Those are just people",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025593/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/those-are-just-people.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025593/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/those-are-just-people.jpg"
+          },
+          {
+            "title": "The Spirit Room",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025607/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/the-spirit-room.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025607/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/the-spirit-room.jpg"
+          },
+          {
+            "title": "Not her favorite",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025618/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/not-her-favorite.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025618/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/not-her-favorite.jpg"
+          },
+          {
+            "title": "Take a tour of our Clothes Closet",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025633/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/take-a-tour-of-our-clothes-closet.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025633/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/take-a-tour-of-our-clothes-closet.jpg"
+          },
+          {
+            "title": "Our food shopping experience",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025651/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/our-food-shopping-experience.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025651/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/our-food-shopping-experience.jpg"
+          },
+          {
+            "title": "Our fun isle",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025669/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/our-fun-isle.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025669/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/our-fun-isle.jpg"
+          },
+          {
+            "title": "Tour our coolers",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025682/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/tour-our-coolers.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025682/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/tour-our-coolers.jpg"
+          },
+          {
+            "title": "September is sock month!",
+            "src": "https://res.cloudinary.com/dsbllwpbh/video/upload/f_auto:video,q_auto,w_720/v1783025695/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/september-is-sock-month.mp4",
+            "poster": "https://res.cloudinary.com/dsbllwpbh/video/upload/so_1,f_auto,q_auto,w_720/v1783025695/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/stories/september-is-sock-month.jpg"
+          }
+        ]
+      },
+      {
+        "type": "quote",
+        "text": "When you have time, please volunteer. When you have extra, please share. When you are in need, please come.",
+        "cite": "The Pantry's standing invitation"
+      },
+      {
+        "type": "split",
+        "align": "right",
+        "kicker": [
+          "the",
+          "PANTRY"
+        ],
+        "heading": "A grocery store, not a handout line",
+        "image": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783025719/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/pantry-aisle.jpg",
+        "caption": "Client Choice — real shelves, real carts",
+        "body": [
+          "Client Choice means the pantry works like a small grocery store: real aisles, fresh produce, dairy and proteins alongside the staples, and the dignity of choosing what your own family eats. Residents of Batavia and Batavia Township — including parts of Aurora and North Aurora — can shop once a month, or order online a day ahead and pick up at the counter."
+        ],
+        "bullets": [
+          "Fresh produce, dairy & pantry staples",
+          "Order online 24 hours ahead — staff will schedule your pick-up",
+          "Bring a photo ID and a current utility bill or rent receipt"
+        ]
+      },
+      {
+        "type": "split",
+        "align": "left",
+        "kicker": [
+          "the",
+          "CLOTHES CLOSET"
+        ],
+        "heading": "Coats, clothes & confidence",
+        "image": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783025717/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/clothes-closet.jpg",
+        "caption": "The other half of the name",
+        "body": [
+          "The Clothes Closet is the quieter half of the operation: clothing for every age and season, from school coats to work clothes to kids' sizes that never fit for long. Neighbors are welcome up to twice a month — and yes, September really is sock month; there's a film about it above."
+        ],
+        "bullets": [
+          "Clothing for all ages & seasons",
+          "Visit up to twice each month",
+          "Clothes Closet line: (630) 406-0036"
+        ]
+      },
+      {
+        "type": "gallery",
+        "kicker": [
+          "on the",
+          "SHELVES"
+        ],
+        "images": [
+          {
+            "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783025717/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/produce-rack.jpg",
+            "caption": "Fresh first"
+          },
+          {
+            "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783025718/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/volunteer-sorting.jpg",
+            "caption": "Volunteer hands"
+          },
+          {
+            "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783025715/bataviail/pages/4cbc77b9-3054-4976-8573-7a7da4044200/volunteers.jpg",
+            "caption": "The red-apron crew"
+          }
+        ]
+      },
+      {
+        "type": "visit",
+        "kicker": [
+          "get help or",
+          "GIVE IT"
+        ],
+        "heading": "Come as a neighbor",
+        "note": "Shopping hours: Tuesday 1–3 pm · Wednesday & Thursday 6:30–7:30 pm · Friday 10 am–noon. Serving Batavia and Batavia Township, including parts of Aurora and North Aurora. When you have extra, the donate and volunteer doors are always open."
+      }
+    ]
+  }
+}
