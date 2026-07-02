@@ -16,10 +16,12 @@
       "accent": "#a9791d",
       "accentBright": "#e5bb5e",
       "accent2": "#274d8b",
-      "fontDisplay": "Figtree",
+      "fontDisplay": "Bebas Neue",
       "fontAccent": "Kelly Slab",
       "fontBody": "Figtree",
-      "google": ["Kelly+Slab", "Figtree:wght@400;600;800"]
+      "headingWeight": "400",
+      "headingTracking": ".045em",
+      "google": ["Bebas+Neue", "Kelly+Slab", "Figtree:wght@400;600;800"]
     },
     "blocks": [
       {

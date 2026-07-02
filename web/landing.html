@@ -152,7 +152,7 @@
   .phero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,19,16,.12) 25%,rgba(20,19,16,.78) 100%)}
   .phero .inner{position:relative;z-index:2;max-width:1080px;margin:0 auto;width:100%;padding:120px 28px 66px;color:#fff}
   .phero .peyebrow{font:600 13px/1 var(--fb);letter-spacing:.3em;text-transform:uppercase;color:var(--ab);margin:0 0 16px}
-  .phero h1{margin:0 0 18px;font-family:var(--fd);font-weight:800;font-size:clamp(46px,7.2vw,92px);line-height:.98;letter-spacing:-.015em}
+  .phero h1{margin:0 0 18px;font-family:var(--fd);font-weight:var(--hw,800);font-size:clamp(46px,7.2vw,92px);line-height:.98;letter-spacing:var(--ht,-.015em)}
   .phero .ptag{font-family:var(--fa,var(--fd));font-size:clamp(18px,2.4vw,25px);line-height:1.45;color:rgba(255,255,255,.88);max-width:52ch;margin:0 0 26px}
   .phero .btns{margin-top:0}
   .phero .btn.primary{background:var(--ab);color:#242323}
@@ -165,7 +165,7 @@
   .pkick::after{content:"";flex:0 0 46px;height:3px;background:var(--ab);border-radius:2px;align-self:center}
 
   .psplit{display:grid;grid-template-columns:1.04fr .96fr;gap:54px;align-items:center}
-  .psplit .txt h3{font-family:var(--fd);font-weight:800;font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:-.015em;margin:6px 0 16px;color:var(--ink)}
+  .psplit .txt h3{font-family:var(--fd);font-weight:var(--hw,800);font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:var(--ht,-.015em);margin:6px 0 16px;color:var(--ink)}
   .psplit .txt p{font-size:17.5px;line-height:1.75;color:var(--ink);margin:0 0 14px}
   .psplit figure{margin:0}
   .psplit img{width:100%;aspect-ratio:4/3.1;object-fit:cover;border-radius:14px;box-shadow:0 16px 44px rgba(36,35,35,.18)}
@@ -189,11 +189,11 @@
   .pcard span{font-size:13px;color:var(--muted);letter-spacing:.04em}
 
   .pvisit{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:start}
-  .pvisit h3{font-family:var(--fd);font-weight:800;font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:-.015em;margin:6px 0 14px}
+  .pvisit h3{font-family:var(--fd);font-weight:var(--hw,800);font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:var(--ht,-.015em);margin:6px 0 14px}
   .pvisit .note{font-size:17px;line-height:1.7;color:var(--ink);margin:0 0 20px}
   .pvisit .hcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px 28px}
   .pvisit .hcard .hl{font:800 12.5px/1 var(--fb);letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
-  .ph3{font-family:var(--fd);font-weight:800;font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:-.015em;margin:6px 0 4px;color:var(--ink)}
+  .ph3{font-family:var(--fd);font-weight:var(--hw,800);font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:var(--ht,-.015em);margin:6px 0 4px;color:var(--ink)}
   .pevents{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px;margin-top:20px}
   .pev{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 18px;border-top:4px solid var(--ab)}
   .pev .d{font-family:var(--fa,var(--fd));color:var(--accent);font-size:18px;margin:0 0 8px}
@@ -363,6 +363,9 @@ function applyTheme(t,e,pb){ // pb = per-page brand overrides from entity_pages.
   }
   root.setProperty("--fd",fd);root.setProperty("--fb",fb);
   root.setProperty("--fa",(pb&&pb.fontAccent)?`'${pb.fontAccent}',Georgia,serif`:fd);
+  // heading voice knobs: single-weight display faces (Bebas etc.) need 400 + positive tracking
+  if(pb&&pb.headingWeight)root.setProperty("--hw",pb.headingWeight);
+  if(pb&&pb.headingTracking)root.setProperty("--ht",pb.headingTracking);
   if(gf.length){const l=document.createElement("link");l.rel="stylesheet";
     l.href=`https://fonts.googleapis.com/css2?${gf.map(f=>"family="+f).join("&")}&display=swap`;document.head.appendChild(l);}
   document.body.dataset.theme=t.key;
