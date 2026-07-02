@@ -5,6 +5,7 @@
   "tier": 3,
   "theme_key": "bespoke",
   "published": true,
+  "promote_hero": true,
   "notes": "Pilot Tier-3 bespoke page. Palette/type sampled from sturdyshelterbrewing.com (cream/charcoal/gold/river-blue; Avenir-like body, Kelly Slab accents). Copy is original, written from researched facts — founding story, building history, taproom details. Photos are the brewery's own, rehosted on Cloudinary under bataviail/pages/<entity-id>/.",
   "layout_json": {
     "brand": {

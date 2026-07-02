@@ -5,6 +5,7 @@
   "tier": 3,
   "theme_key": "bespoke",
   "published": true,
+  "promote_hero": true,
   "notes": "Second Tier-3 pilot — deliberately opposite of Sturdy Shelter: light, hopeful, humanist. Palette from their red windmill identity; Bricolage Grotesque display + Caveat handwritten accent + Lato body (their site font). Copy original, from bataviafoodpantry.org (about/get-help, researched 2026-07). Photos are theirs, rehosted on Cloudinary. Videos: 12 vertical story reels shot for bataviail.co/foodpantry, rehosted from Vimeo to Cloudinary (signed URLs expire).",
   "layout_json": {
     "brand": {
