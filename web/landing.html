@@ -146,6 +146,55 @@
   .demobar .close:hover{color:#fff}
   @media(max-width:700px){.demobar{max-width:calc(100vw - 20px);overflow-x:auto}.demobar .dlabel{display:none}}
 
+  /* ── Bespoke PAGE blocks (entity_pages layout_json) ── */
+  .phero{position:relative;min-height:88vh;display:flex;align-items:flex-end;background:#1a1a17}
+  .phero .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .phero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,19,16,.12) 25%,rgba(20,19,16,.78) 100%)}
+  .phero .inner{position:relative;z-index:2;max-width:1080px;margin:0 auto;width:100%;padding:120px 28px 66px;color:#fff}
+  .phero .peyebrow{font:600 13px/1 var(--fb);letter-spacing:.3em;text-transform:uppercase;color:var(--ab);margin:0 0 16px}
+  .phero h1{margin:0 0 18px;font-family:var(--fd);font-weight:400;font-size:clamp(50px,8vw,102px);line-height:.98;letter-spacing:.01em}
+  .phero .ptag{font-family:var(--fd);font-size:clamp(18px,2.4vw,25px);line-height:1.45;color:rgba(255,255,255,.88);max-width:52ch;margin:0 0 26px}
+  .phero .btns{margin-top:0}
+  .phero .btn.primary{background:var(--ab);color:#242323}
+  .phero .btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(4px)}
+  .phero .elogo{box-shadow:0 6px 24px rgba(0,0,0,.4)}
+
+  .pkick{display:flex;align-items:baseline;gap:10px;margin:0 0 10px}
+  .pkick .pk1{font-family:var(--fd);font-size:22px;color:var(--accent);text-transform:lowercase}
+  .pkick .pk2{font:800 13.5px/1 var(--fb);letter-spacing:.24em;text-transform:uppercase;color:var(--ink)}
+  .pkick::after{content:"";flex:0 0 46px;height:3px;background:var(--ab);border-radius:2px;align-self:center}
+
+  .psplit{display:grid;grid-template-columns:1.04fr .96fr;gap:54px;align-items:center}
+  .psplit .txt h3{font-family:var(--fd);font-weight:400;font-size:clamp(27px,3.8vw,42px);line-height:1.08;margin:6px 0 16px;color:var(--ink)}
+  .psplit .txt p{font-size:17.5px;line-height:1.75;color:var(--ink);margin:0 0 14px}
+  .psplit figure{margin:0}
+  .psplit img{width:100%;aspect-ratio:4/3.1;object-fit:cover;border-radius:14px;box-shadow:0 16px 44px rgba(36,35,35,.18)}
+  .psplit figcaption{font-size:13px;color:var(--muted);padding:9px 4px 0}
+  .psplit.rev figure{order:-1}
+  .pbullets{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:9px}
+  .pbullets li{padding-left:26px;position:relative;font-weight:600;font-size:15.5px}
+  .pbullets li::before{content:"";position:absolute;left:0;top:.52em;width:14px;height:3px;background:var(--ab);border-radius:2px}
+
+  .pquote{max-width:860px;margin:0 auto;text-align:center;padding:10px 0}
+  .pquote blockquote{margin:0;font-family:var(--fd);font-size:clamp(26px,4vw,42px);line-height:1.3;color:var(--ink)}
+  .pquote .mark{color:var(--ab);font-size:1.5em;line-height:0;vertical-align:-.14em}
+  .pquote cite{display:block;margin-top:18px;font:600 12.5px/1 var(--fb);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-style:normal}
+
+  .pteam{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:18px}
+  .pcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 22px;text-align:center}
+  .pcard .mono{width:56px;height:56px;border-radius:50%;background:var(--ab);color:#242323;font:700 22px/56px var(--fd);margin:0 auto 14px}
+  .pcard b{display:block;font-size:16.5px}
+  .pcard span{font-size:13px;color:var(--muted);letter-spacing:.04em}
+
+  .pvisit{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:start}
+  .pvisit h3{font-family:var(--fd);font-weight:400;font-size:clamp(27px,3.8vw,42px);line-height:1.08;margin:6px 0 14px}
+  .pvisit .note{font-size:17px;line-height:1.7;color:var(--ink);margin:0 0 20px}
+  .pvisit .hcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px 28px}
+  .pvisit .hcard .hl{font:800 12.5px/1 var(--fb);letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+  body[data-page] .topbar a{background:rgba(0,0,0,.34)}
+  body[data-page] .topbar.solid a{background:var(--tint);color:var(--ink)}
+  @media(max-width:760px){.psplit,.pvisit{grid-template-columns:1fr;gap:26px}.psplit.rev figure{order:0}}
+
   /* ═══ Theme personalities ═══════════════════════ */
 
   /* bold — sharp, condensed, industrial */
@@ -228,11 +277,22 @@ async function load(){
   if(!e){document.getElementById("page").innerHTML="<p style='padding:80px 24px'>Not found. <a href='index.html'>← Back</a></p>";return;}
   document.title=e.name+" — Batavia, IL";
   const key=window.THEMES[params.get("theme")]?params.get("theme"):window.pickTheme(e);
-  render(e,key);
+  // Tier 3: a published entity_pages spec upgrades "bespoke" from the generic
+  // pro theme to this entity's own authored page (custom copy, palette, blocks).
+  let page=null;
+  if(key==="bespoke"){
+    try{
+      const r=await fetch(`${SUPABASE_URL}/rest/v1/entity_pages?entity_id=eq.${id}&published=is.true&order=version.desc&limit=1&select=layout_json`,
+        {headers:{apikey:ANON_KEY,Authorization:"Bearer "+ANON_KEY}});
+      page=((await r.json())[0]||{}).layout_json||null;
+      if(page&&!Array.isArray(page.blocks))page=null;
+    }catch(err){}
+  }
+  render(e,key,page);
 }
 
 /* ── Theme application ────────────────────────────── */
-function applyTheme(t,e){
+function applyTheme(t,e,pb){ // pb = per-page brand overrides from entity_pages.layout_json
   const b=e.brand||{}, root=document.documentElement.style;
   const tok=Object.assign({},t.tokens);
   if(t.useBrand){
@@ -245,19 +305,28 @@ function applyTheme(t,e){
       if(a)tok.accent2=a;
     }
   }
+  if(pb)["bg","surface","ink","muted","line","accent","accent2"].forEach(k=>{if(hex(pb[k]))tok[k]=pb[k]});
   for(const[k,v]of Object.entries({bg:tok.bg,surface:tok.surface,ink:tok.ink,muted:tok.muted,line:tok.line,accent:tok.accent,accent2:tok.accent2}))
     root.setProperty("--"+k,v);
-  root.setProperty("--tint",tok.accent+(t.dark?"22":"14"));
+  const darkBg=lum(tok.bg||"#ffffff")<.4;
+  root.setProperty("--tint",tok.accent+(darkBg?"22":"14"));
   root.setProperty("--lineA",tok.accent+"40");
   root.setProperty("--btn-ink",lum(tok.accent)>.55?"#14161f":"#fff");
-  // fonts: theme pairing; profile additionally adopts the entity's own heading font
-  let fd=t.fonts.display;
-  const gf=t.fonts.google.slice();
+  root.setProperty("--ab",(pb&&hex(pb.accentBright))||tok.accent); // bright accent for graphic uses on photos/dark
+  // fonts: theme pairing; profile adopts the entity heading font; page brand wins outright
+  let fd=t.fonts.display, fb=t.fonts.body;
+  let gf=t.fonts.google.slice();
   if(t.key==="profile"&&b.font_heading){fd=`'${b.font_heading}',Georgia,serif`;gf.push(encodeURIComponent(b.font_heading).replace(/%20/g,"+"));}
-  root.setProperty("--fd",fd);root.setProperty("--fb",t.fonts.body);
+  if(pb){
+    if(pb.fontDisplay)fd=`'${pb.fontDisplay}',Georgia,serif`;
+    if(pb.fontBody)fb=`'${pb.fontBody}',-apple-system,sans-serif`;
+    if(Array.isArray(pb.google)&&pb.google.length)gf=pb.google.slice();
+  }
+  root.setProperty("--fd",fd);root.setProperty("--fb",fb);
   if(gf.length){const l=document.createElement("link");l.rel="stylesheet";
     l.href=`https://fonts.googleapis.com/css2?${gf.map(f=>"family="+f).join("&")}&display=swap`;document.head.appendChild(l);}
   document.body.dataset.theme=t.key;
+  if(pb)document.body.dataset.page="1";
 }
 
 /* ── Hero variants ────────────────────────────────── */
@@ -355,6 +424,63 @@ const SECTIONS={
   },
 };
 
+/* ── Tier-3 block library (entity_pages.layout_json.blocks) ──
+ * Authored/agent content renders through these; unknown types are skipped so
+ * old pages survive new engines and vice versa. */
+const kick=k=>Array.isArray(k)&&k.length?`<div class="pkick"><span class="pk1">${esc(k[0])}</span><span class="pk2">${esc(k.slice(1).join(" "))}</span></div>`:"";
+const BLOCKS={
+  hero(b,e){
+    const ctas=(b.ctas||[]).map(c=>`<a class="btn ${c.primary?"primary":"ghost"}" href="${esc(c.href)}"${/^https?:/.test(c.href||"")?' target="_blank" rel="noopener"':""}>${esc(c.label)}</a>`).join("");
+    return `<div class="phero">${b.image?`<img class="bg" src="${esc(b.image)}" alt="">`:""}
+      <div class="inner">${logoTag(e)}${b.eyebrow?`<p class="peyebrow">${esc(b.eyebrow)}</p>`:""}
+        <h1>${esc(b.title||e.name)}</h1>
+        ${b.tagline?`<p class="ptag">${esc(b.tagline)}</p>`:""}
+        ${ctas?`<div class="btns">${ctas}</div>`:""}</div></div>`;
+  },
+  facts(b){
+    const items=(b.items||[]).slice(0,4);if(!items.length)return"";
+    return sec("",`<div class="stats">${items.map(s=>`<div class="stat"><div class="n">${esc(s.n)}</div><div class="l">${esc(s.l)}</div></div>`).join("")}</div>`);
+  },
+  story(b,e){return BLOCKS.split(Object.assign({align:"right"},b),e)},
+  split(b){
+    const paras=(b.body||[]).map(p=>`<p>${esc(p)}</p>`).join("");
+    const bullets=(b.bullets||[]).length?`<ul class="pbullets">${b.bullets.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:"";
+    const fig=b.image?`<figure><img src="${esc(b.image)}" loading="lazy" alt="${esc(b.caption||"")}">${b.caption?`<figcaption>${esc(b.caption)}</figcaption>`:""}</figure>`:"";
+    return sec("",`<div class="psplit${b.align==="left"?" rev":""}">
+        <div class="txt">${kick(b.kicker)}${b.heading?`<h3>${esc(b.heading)}</h3>`:""}${paras}${bullets}</div>${fig}</div>`);
+  },
+  quote(b){
+    if(!b.text)return"";
+    return sec("",`<div class="pquote"><blockquote><span class="mark">“</span>${esc(b.text)}<span class="mark">”</span></blockquote>${b.cite?`<cite>— ${esc(b.cite)}</cite>`:""}</div>`);
+  },
+  team(b){
+    const ppl=(b.people||[]);if(!ppl.length)return"";
+    const cards=ppl.map(p=>`<div class="pcard"><div class="mono">${esc((p.name||"?")[0])}</div><b>${esc(p.name)}</b><span>${esc(p.role||"")}</span></div>`).join("");
+    return sec("",`${kick(b.kicker)}<div class="pteam">${cards}</div>`);
+  },
+  gallery(b){
+    const imgs=(b.images||[]);if(!imgs.length)return"";
+    return sec("",`${kick(b.kicker)}<div class="gallery">${imgs.map(m=>`<figure><img src="${esc(m.url)}" loading="lazy" alt="${esc(m.caption||"")}">${m.caption?`<figcaption>${esc(m.caption)}</figcaption>`:""}</figure>`).join("")}</div>`);
+  },
+  visit(b,e){
+    const loc=locLine(e), tel=((e.contacts||[]).find(c=>c.phone)||{}).phone;
+    const hours=(e.hours||[]).slice().sort((x,y)=>x.day_of_week-y.day_of_week)
+      .map(x=>`<tr><td>${DAYS[x.day_of_week]}</td><td>${esc(fmtT(x.opens))} – ${esc(fmtT(x.closes))}</td></tr>`).join("");
+    const social=(e.social||[]).map(s=>`<a class="btn ghost" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(plat(s.platform))}</a>`).join("");
+    const btns=[
+      e.website?`<a class="btn primary" href="${esc(e.website.trim())}" target="_blank" rel="noopener">Visit website ↗</a>`:"",
+      tel?`<a class="btn ghost" href="tel:${esc(tel.replace(/[^\d+]/g,""))}">Call ${esc(tel)}</a>`:"",
+      loc?`<a class="btn ghost" href="https://maps.google.com/?q=${encodeURIComponent(loc)}" target="_blank" rel="noopener">Get directions</a>`:"",
+    ].filter(Boolean).join("")+social;
+    return `<section class="sec" id="visit"><div class="pvisit">
+        <div>${kick(b.kicker)}${b.heading?`<h3>${esc(b.heading)}</h3>`:""}
+          ${b.note?`<p class="note">${esc(b.note)}</p>`:""}
+          ${loc?`<p class="note" style="font-weight:600">${esc(loc)}</p>`:""}
+          <div class="btns">${btns}</div></div>
+        ${hours?`<div class="hcard"><p class="hl">Hours</p><table class="hours">${hours}</table></div>`:""}</div></section>`;
+  },
+};
+
 /* ── Small shared bits ────────────────────────────── */
 const sec=(label,body)=>`<section class="sec">${label?`<h2>${esc(label)}</h2>`:""}${body}</section>`;
 const logoTag=e=>{const l=e.logo_url&&/res\.cloudinary\.com/i.test(e.logo_url)?e.logo_url:"";return l?`<img class="elogo" src="${esc(l)}" alt="">`:""};
@@ -363,17 +489,26 @@ const locLine=e=>e.location&&e.location.address?[e.location.address,e.location.c
 const firstSentence=s=>{const m=(s||"").match(/^.*?[.!?](?=\s|$)/);return m?m[0]:(s||"")};
 
 /* ── Render ───────────────────────────────────────── */
-function render(e,key){
+function render(e,key,page){
   const t=window.themeByKey(key);
-  applyTheme(t,e);
+  applyTheme(t,e,page&&page.brand);
 
   document.getElementById("site-link").style.display=e.website?"inline-block":"none";
   if(e.website)document.getElementById("site-link").href=e.website.trim();
 
-  const hero=HEROES[t.hero](e,t);
-  const body=t.sections.map(s=>SECTIONS[s]?SECTIONS[s](e,t):"").join("");
+  let hero,body,foot="Part of the <a href=\"index.html\">Batavia community directory</a>";
+  if(page){ // authored Tier-3 page: block spec replaces the theme's section order
+    const blocks=page.blocks.map(b=>BLOCKS[b.type]?BLOCKS[b.type](b,e):"");
+    hero=page.blocks[0]&&page.blocks[0].type==="hero"?blocks.shift():"";
+    body=blocks.join("");
+    foot="Bespoke Pro page · "+foot;
+  }else{
+    hero=HEROES[t.hero](e,t);
+    body=t.sections.map(s=>SECTIONS[s]?SECTIONS[s](e,t):"").join("");
+    foot+=" · "+esc(e.verification_status||"");
+  }
   document.getElementById("page").innerHTML=`${hero}<main>${body}</main>
-    <div class="foot">Part of the <a href="index.html">Batavia community directory</a> · ${esc(e.verification_status||"")}</div>`;
+    <div class="foot">${foot}</div>`;
 
   // hero thumbnail swap (immersive only)
   document.querySelectorAll(".thumb").forEach(th=>th.addEventListener("click",()=>{

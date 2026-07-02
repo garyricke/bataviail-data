@@ -1,0 +1,133 @@
+{
+  "entity_id": "fc09a433-843f-49ec-9e0a-1edec4cc4c1f",
+  "entity_name": "Sturdy Shelter Brewing",
+  "version": 1,
+  "tier": 3,
+  "theme_key": "bespoke",
+  "published": true,
+  "notes": "Pilot Tier-3 bespoke page. Palette/type sampled from sturdyshelterbrewing.com (cream/charcoal/gold/river-blue; Avenir-like body, Kelly Slab accents). Copy is original, written from researched facts — founding story, building history, taproom details. Photos are the brewery's own, rehosted on Cloudinary under bataviail/pages/<entity-id>/.",
+  "layout_json": {
+    "brand": {
+      "bg": "#fcf8ed",
+      "surface": "#ffffff",
+      "ink": "#242323",
+      "muted": "#6f695c",
+      "line": "#eae2cd",
+      "accent": "#a9791d",
+      "accentBright": "#e5bb5e",
+      "accent2": "#274d8b",
+      "fontDisplay": "Kelly Slab",
+      "fontBody": "Figtree",
+      "google": ["Kelly+Slab", "Figtree:wght@400;600;800"]
+    },
+    "blocks": [
+      {
+        "type": "hero",
+        "eyebrow": "Craft brewery & taproom · Batavia, Illinois",
+        "title": "Sturdy Shelter Brewing",
+        "tagline": "“A faithful friend is a sturdy shelter; whoever finds one finds a treasure.”",
+        "image": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783008937/bataviail/pages/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/bar-hero.jpg",
+        "ctas": [
+          { "label": "See what’s on tap ↗", "href": "https://www.sturdyshelterbrewing.com/the-beer", "primary": true },
+          { "label": "Plan your visit", "href": "#visit" }
+        ]
+      },
+      {
+        "type": "facts",
+        "items": [
+          { "n": "18", "l": "Taps pouring" },
+          { "n": "2", "l": "Lukr side-pours" },
+          { "n": "1850s", "l": "The building’s first act" },
+          { "n": "2022", "l": "Taproom opens" }
+        ]
+      },
+      {
+        "type": "story",
+        "kicker": ["our", "STORY"],
+        "heading": "Four decades of friendship, poured into a name",
+        "image": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783008957/bataviail/pages/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/founders.jpg",
+        "caption": "Frank & Diane Mercadante, owners",
+        "body": [
+          "The name comes from a proverb Frank and Diane Mercadante built their marriage around in 1980: a faithful friend is a sturdy shelter. Over the four decades that followed they put down roots in the Tri-City area, raised six children, and wove themselves into church and community life — so when a brewery finally happened, its name was already waiting.",
+          "Frank’s homebrewing began as a hobby measured in small, complex batches shared with family and friends. It became something bigger in 2018, when he and fellow brewer Oliver Bulley started sketching a shared idea: a room where people gather around a table and feel genuinely welcome, with expertly made beer at the center.",
+          "That room opened in 2022 — an independent craft brewery run day to day by Frank, Diane, and Oliver, and built to feel less like a bar than like the sturdiest kind of shelter: a friend’s house."
+        ]
+      },
+      {
+        "type": "quote",
+        "text": "A space to come together around a table and find comfort and welcome.",
+        "cite": "the founding vision, 2018"
+      },
+      {
+        "type": "split",
+        "align": "right",
+        "kicker": ["the", "TAPROOM"],
+        "heading": "Eighteen taps at the river’s edge",
+        "image": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783008936/bataviail/pages/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/lounge.jpg",
+        "caption": "The lounge — built for lingering",
+        "body": [
+          "The taproom sits right along the Fox River Trail, with river views from the first and second floors, a 12-seat bar, a window into the brewhouse, and lounge corners that reward staying a while. Eighteen taps cover the whole range — including two Lukr side-pour faucets for classic lagers and nitro for smooth stouts and porters — alongside wine, handcrafted house sodas, and non-alcoholic options."
+        ],
+        "bullets": [
+          "BYOF — bring your own food, or catch a visiting food truck",
+          "Light prepared snacks at the bar",
+          "Private events and community nights upstairs"
+        ]
+      },
+      {
+        "type": "split",
+        "align": "left",
+        "kicker": ["the", "BEER"],
+        "heading": "Beers that tell Batavia’s story",
+        "image": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783008938/bataviail/pages/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/beer-flight.jpg",
+        "caption": "Lagers, ales, stouts — every glass on purpose",
+        "body": [
+          "Every beer here is brewed on purpose, with fresh and unusual ingredients when the story calls for them. Even the chalkboard reads like local history: Capitol Theatre Pale Ale nods to the building’s movie-house years, and Kluber IPA raises a glass to the architect who brought it back to life. Favorite pours also leave in 16-ounce cans — at the brewery, and at Binny’s in Geneva."
+        ],
+        "bullets": [
+          "Sturdy Shelter Premium Lager",
+          "Francesco Sicilian Pilsner",
+          "Capitol Theatre Pale Ale",
+          "El Refugio",
+          "Pulped Up! Lightweight",
+          "Kluber IPA"
+        ]
+      },
+      {
+        "type": "split",
+        "align": "right",
+        "kicker": ["the", "BUILDING"],
+        "heading": "A music hall’s third act",
+        "image": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783008940/bataviail/pages/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/tap-handles.jpg",
+        "caption": "Tap handles wearing the badge",
+        "body": [
+          "10 S. Shumway has been gathering Batavians since the mid-1800s — first as the 525-seat Batavia Music Hall, then as the Batavia Opera House from 1912, then as a run of movie theaters through 1957. After decades of quieter uses, architect Mike Kluber’s 2006 renovation saved the building’s bones and its character. The brewery is simply the latest act in a very old room."
+        ]
+      },
+      {
+        "type": "team",
+        "kicker": ["the", "PEOPLE"],
+        "people": [
+          { "name": "Frank Mercadante", "role": "Owner & Head Brewer" },
+          { "name": "Diane Mercadante", "role": "Owner" },
+          { "name": "Oliver Bulley", "role": "General Manager & Brewer" }
+        ]
+      },
+      {
+        "type": "gallery",
+        "kicker": ["the", "ROOM"],
+        "images": [
+          { "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783008958/bataviail/pages/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/taproom-community.jpg", "caption": "Cheers to community" },
+          { "url": "https://res.cloudinary.com/dsbllwpbh/image/upload/c_limit,f_auto,q_auto,w_1800/v1783008936/bataviail/pages/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/lounge.jpg", "caption": "The lounge" },
+          { "url": "https://kgbudsefckrlumxikmtp.supabase.co/storage/v1/object/public/media/heroes/fc09a433-843f-49ec-9e0a-1edec4cc4c1f/70087460-9bd1-4d01-99d3-b37b64d987aa.jpg", "caption": "On location in Batavia" }
+        ]
+      },
+      {
+        "type": "visit",
+        "kicker": ["plan a", "VISIT"],
+        "heading": "Find your seat by the Fox",
+        "note": "Steps off the Fox River Trail in downtown Batavia. Bring your own food, catch a food truck, or just come for the pour — and ask about the loyalty program and “Buy Your Friend a Beer” at the bar."
+      }
+    ]
+  }
+}
