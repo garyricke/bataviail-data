@@ -152,20 +152,20 @@
   .phero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,19,16,.12) 25%,rgba(20,19,16,.78) 100%)}
   .phero .inner{position:relative;z-index:2;max-width:1080px;margin:0 auto;width:100%;padding:120px 28px 66px;color:#fff}
   .phero .peyebrow{font:600 13px/1 var(--fb);letter-spacing:.3em;text-transform:uppercase;color:var(--ab);margin:0 0 16px}
-  .phero h1{margin:0 0 18px;font-family:var(--fd);font-weight:400;font-size:clamp(50px,8vw,102px);line-height:.98;letter-spacing:.01em}
-  .phero .ptag{font-family:var(--fd);font-size:clamp(18px,2.4vw,25px);line-height:1.45;color:rgba(255,255,255,.88);max-width:52ch;margin:0 0 26px}
+  .phero h1{margin:0 0 18px;font-family:var(--fd);font-weight:800;font-size:clamp(46px,7.2vw,92px);line-height:.98;letter-spacing:-.015em}
+  .phero .ptag{font-family:var(--fa,var(--fd));font-size:clamp(18px,2.4vw,25px);line-height:1.45;color:rgba(255,255,255,.88);max-width:52ch;margin:0 0 26px}
   .phero .btns{margin-top:0}
   .phero .btn.primary{background:var(--ab);color:#242323}
   .phero .btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(4px)}
   .phero .elogo{box-shadow:0 6px 24px rgba(0,0,0,.4)}
 
   .pkick{display:flex;align-items:baseline;gap:10px;margin:0 0 10px}
-  .pkick .pk1{font-family:var(--fd);font-size:22px;color:var(--accent);text-transform:lowercase}
+  .pkick .pk1{font-family:var(--fa,var(--fd));font-size:22px;color:var(--accent);text-transform:lowercase}
   .pkick .pk2{font:800 13.5px/1 var(--fb);letter-spacing:.24em;text-transform:uppercase;color:var(--ink)}
   .pkick::after{content:"";flex:0 0 46px;height:3px;background:var(--ab);border-radius:2px;align-self:center}
 
   .psplit{display:grid;grid-template-columns:1.04fr .96fr;gap:54px;align-items:center}
-  .psplit .txt h3{font-family:var(--fd);font-weight:400;font-size:clamp(27px,3.8vw,42px);line-height:1.08;margin:6px 0 16px;color:var(--ink)}
+  .psplit .txt h3{font-family:var(--fd);font-weight:800;font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:-.015em;margin:6px 0 16px;color:var(--ink)}
   .psplit .txt p{font-size:17.5px;line-height:1.75;color:var(--ink);margin:0 0 14px}
   .psplit figure{margin:0}
   .psplit img{width:100%;aspect-ratio:4/3.1;object-fit:cover;border-radius:14px;box-shadow:0 16px 44px rgba(36,35,35,.18)}
@@ -176,21 +176,29 @@
   .pbullets li::before{content:"";position:absolute;left:0;top:.52em;width:14px;height:3px;background:var(--ab);border-radius:2px}
 
   .pquote{max-width:860px;margin:0 auto;text-align:center;padding:10px 0}
-  .pquote blockquote{margin:0;font-family:var(--fd);font-size:clamp(26px,4vw,42px);line-height:1.3;color:var(--ink)}
+  .pquote blockquote{margin:0;font-family:var(--fa,var(--fd));font-size:clamp(26px,4vw,42px);line-height:1.3;color:var(--ink)}
   .pquote .mark{color:var(--ab);font-size:1.5em;line-height:0;vertical-align:-.14em}
   .pquote cite{display:block;margin-top:18px;font:600 12.5px/1 var(--fb);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-style:normal}
 
   .pteam{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:18px}
   .pcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 22px;text-align:center}
-  .pcard .mono{width:56px;height:56px;border-radius:50%;background:var(--ab);color:#242323;font:700 22px/56px var(--fd);margin:0 auto 14px}
+  .pcard .mono{width:56px;height:56px;border-radius:50%;background:var(--ab);color:#242323;font:700 22px/56px var(--fa,var(--fd));margin:0 auto 14px}
   .pcard b{display:block;font-size:16.5px}
   .pcard span{font-size:13px;color:var(--muted);letter-spacing:.04em}
 
   .pvisit{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:start}
-  .pvisit h3{font-family:var(--fd);font-weight:400;font-size:clamp(27px,3.8vw,42px);line-height:1.08;margin:6px 0 14px}
+  .pvisit h3{font-family:var(--fd);font-weight:800;font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:-.015em;margin:6px 0 14px}
   .pvisit .note{font-size:17px;line-height:1.7;color:var(--ink);margin:0 0 20px}
   .pvisit .hcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px 28px}
   .pvisit .hcard .hl{font:800 12.5px/1 var(--fb);letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+  .ph3{font-family:var(--fd);font-weight:800;font-size:clamp(26px,3.6vw,40px);line-height:1.08;letter-spacing:-.015em;margin:6px 0 4px;color:var(--ink)}
+  .pevents{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px;margin-top:20px}
+  .pev{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 18px;border-top:4px solid var(--ab)}
+  .pev .d{font-family:var(--fa,var(--fd));color:var(--accent);font-size:18px;margin:0 0 8px}
+  .pev b{display:block;font-size:16px;margin-bottom:5px}
+  .pev p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.55}
+  .pev .meta{margin-top:8px;font:600 12px/1 var(--fb);letter-spacing:.06em;color:var(--accent2)}
+  .pevents-foot{margin-top:18px}
   body[data-page] .topbar a{background:rgba(0,0,0,.34)}
   body[data-page] .topbar.solid a{background:var(--tint);color:var(--ink)}
   @media(max-width:760px){.psplit,.pvisit{grid-template-columns:1fr;gap:26px}.psplit.rev figure{order:0}}
@@ -323,6 +331,7 @@ function applyTheme(t,e,pb){ // pb = per-page brand overrides from entity_pages.
     if(Array.isArray(pb.google)&&pb.google.length)gf=pb.google.slice();
   }
   root.setProperty("--fd",fd);root.setProperty("--fb",fb);
+  root.setProperty("--fa",(pb&&pb.fontAccent)?`'${pb.fontAccent}',Georgia,serif`:fd);
   if(gf.length){const l=document.createElement("link");l.rel="stylesheet";
     l.href=`https://fonts.googleapis.com/css2?${gf.map(f=>"family="+f).join("&")}&display=swap`;document.head.appendChild(l);}
   document.body.dataset.theme=t.key;
@@ -461,6 +470,21 @@ const BLOCKS={
   gallery(b){
     const imgs=(b.images||[]);if(!imgs.length)return"";
     return sec("",`${kick(b.kicker)}<div class="gallery">${imgs.map(m=>`<figure><img src="${esc(m.url)}" loading="lazy" alt="${esc(m.caption||"")}">${m.caption?`<figcaption>${esc(m.caption)}</figcaption>`:""}</figure>`).join("")}</div>`);
+  },
+  events(b,e){ // live from entity data: upcoming first, so the page stays fresh without republishing
+    const cutoff=Date.now()-864e5;
+    const list=(e.events||[]).filter(x=>x.starts_at&&new Date(x.starts_at).getTime()>cutoff)
+      .sort((a,c)=>new Date(a.starts_at)-new Date(c.starts_at)).slice(0,b.limit||6);
+    if(!list.length)return"";
+    const cards=list.map(x=>{
+      const dt=new Date(x.starts_at), f=evd(x.starts_at);
+      const when=`${DAYS[dt.getDay()]}, ${MON[dt.getMonth()]} ${dt.getDate()}`+(f.m?` · ${f.m}`:"");
+      const meta=[x.price&&x.price!=="Free"?x.price:"",x.url?"Tickets available":""].filter(Boolean).join(" · ");
+      return `<div class="pev"><p class="d">${esc(when)}</p><b>${esc(x.title)}</b>
+        ${x.description?`<p>${esc(x.description)}</p>`:""}${meta?`<div class="meta">${esc(meta)}</div>`:""}</div>`;
+    }).join("");
+    const more=b.moreHref?`<div class="btns pevents-foot"><a class="btn ghost" href="${esc(b.moreHref)}" target="_blank" rel="noopener">${esc(b.moreLabel||"Full calendar ↗")}</a></div>`:"";
+    return sec("",`${kick(b.kicker)}${b.heading?`<h3 class="ph3">${esc(b.heading)}</h3>`:""}<div class="pevents">${cards}</div>${more}`);
   },
   visit(b,e){
     const loc=locLine(e), tel=((e.contacts||[]).find(c=>c.phone)||{}).phone;
