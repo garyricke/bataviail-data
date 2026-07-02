@@ -148,7 +148,7 @@
     <h1>Landing pages that look designed — at directory scale.</h1>
     <p class="lede">How we go from one templated profile per entity to <b style="color:#fff">thousands of pro-designed pages</b> — without hand-building thousands of pages. The trick: design ~8 themes, then let data and the agent swarm fill them.</p>
     <div class="hero-meta">
-      <div>Status · <b>Proposal</b></div>
+      <div>Status · <b>Theme engine live</b> (<code style="background:rgba(255,255,255,.12);color:#9fd8ff">themes.js</code> + <code style="background:rgba(255,255,255,.12);color:#9fd8ff">landing.html</code>)</div>
       <div>Scope · <b>Persona theming + entity page tiers</b></div>
       <div>Aligns with · <b>Phases 1–3</b></div>
     </div>
@@ -157,6 +157,7 @@
 
 <nav class="toc">
   <div class="wrap">
+    <a href="#demo">Live demo</a>
     <a href="#reframe">The reframe</a>
     <a href="#ladder">The tier ladder</a>
     <a href="#personas">Persona theming</a>
@@ -167,6 +168,28 @@
     <a href="#roadmap">Where to start</a>
   </div>
 </nav>
+
+<!-- ─────────────────────────────────────────── -->
+<section class="block" id="demo">
+  <div class="wrap">
+    <h2 class="htitle"><span class="num">▶</span>See it live</h2>
+    <p class="sub">The engine is built: <code>themes.js</code> (registry + category→theme rules) and <code>landing.html</code> (composition engine). Every page below is the <em>same</em> code — only the data and theme key change. Use the tier bar at the bottom of any page to walk the same entity up the ladder.</p>
+
+    <h3>One entity up the whole ladder</h3>
+    <p>Sturdy Shelter Brewing — real community photos, auto-picked <b>warm</b>:</p>
+    <ul>
+      <li><a href="landing.html?id=fc09a433-843f-49ec-9e0a-1edec4cc4c1f&amp;theme=profile">Tier 1 · Profile</a> → <a href="landing.html?id=fc09a433-843f-49ec-9e0a-1edec4cc4c1f">Tier 2 · Warm (auto)</a> → <a href="landing.html?id=fc09a433-843f-49ec-9e0a-1edec4cc4c1f&amp;theme=bespoke">Tier 3 · Bespoke</a></li>
+    </ul>
+
+    <h3>One themed example per archetype</h3>
+    <ul>
+      <li><b>Warm</b> — <a href="landing.html?id=2b7e3132-5d60-4506-999d-10140fd6378c">WindMill Grille &amp; Pizzeria</a> (restaurant)</li>
+      <li><b>Civic</b> — <a href="landing.html?id=e298587f-a19d-49ee-b2ff-518e84dcf37d">City of Batavia</a> (government) · <a href="landing.html?id=b8a7ad73-9e35-442f-b03a-d19ed12d1772">Batavia Depot Museum</a></li>
+      <li><b>Bold</b> — <a href="landing.html?id=9f748b36-2d8d-4748-805b-8262276e7f69">McCormick FONA</a> (manufacturing)</li>
+      <li><b>Profile fallback</b> — <a href="landing.html?id=0e41fece-56e7-45bf-a1f2-d4df8a64be1c">Batavia Animal Clinic</a> (no category rule yet → Tier 1 baseline)</li>
+    </ul>
+  </div>
+</section>
 
 <!-- ─────────────────────────────────────────── -->
 <section class="block" id="reframe">
